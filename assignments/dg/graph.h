@@ -8,20 +8,23 @@
 
 namespace gdwg {
 
+  //Custom comparator
   template<typename N>
   struct CompareByNode {
     bool operator()(const N& lhs, const N& rhs) {
       return lhs->value < rhs->value;
     }
-  };// comparator for Node
+  };// comparator for Graph -> compare Node value
 
   template <typename EP>
   struct CompareByEdgePair{
       bool operator()(const EP& lhs, const EP& rhs){
         return (std::get<0>(lhs).lock()->value < std::get<0>(rhs).lock()->value);
       }
-  };
+  }; //comparator for EdgeSet -> compare Node value in each EdgePair
+  //End of custom comparator
 
+  //Graph implementation
   template<typename N, typename E>
   class Graph {
       // Node struct
@@ -38,6 +41,15 @@ namespace gdwg {
       using NodePtr = std::shared_ptr<Node>;
 
       class const_iterator {};
+
+      //constructor
+      Graph() noexcept;
+
+      
+
+      bool IsEmpty(){
+        return nodes_.empty();
+      }
 
     private:
       std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>> nodes_;
