@@ -64,6 +64,28 @@ namespace gdwg {
       bool InsertEdge(const N& src, const N& dst, const E& w);
       bool IsNode(const N& val);
       bool IsConnected(const N& src, const N& dst);
+//      std::vector<N> GetNodes();
+
+    public:
+      //friends
+      friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g){
+        for(const auto& node: g.nodes_){
+          //write node value
+          os << node.first->value << "(\n";
+
+          //write edges
+          for(const auto& edge: node.second){
+            auto dst_ptr = edge.first.lock();
+            if(dst_ptr){
+              os << "  "<< dst_ptr->value << " | " << edge.second<< '\n';
+            }
+          }
+
+          os << ")\n";
+        }
+
+        return os;
+      }
 
     private:
       std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>> nodes_;
