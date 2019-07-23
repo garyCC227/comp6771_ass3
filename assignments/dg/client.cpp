@@ -9,10 +9,18 @@ int main() {
   gdwg::Graph<std::string, int> g;
 
   //own test
-  std::cout <<g.IsEmpty()<<'\n';
-  //end own test
+//
+  g.InsertNode("hello");
+  g.InsertNode("how");
+  g.InsertNode("are");
 
-//  g.InsertNode("hello");
+  auto nodes = g.get_nodes_();
+  for(const auto& node: nodes){
+    std::cout << node.first->value << '\n';
+  }
+
+//end of own test
+
 //  g.InsertNode("how");
 //  g.InsertNode("are");
 //  g.InsertNode("you?");

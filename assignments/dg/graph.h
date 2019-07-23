@@ -5,6 +5,9 @@
 #include <set>
 #include <memory>
 #include <utility>
+#include <vector>
+#include <tuple>
+#include <algorithm>
 
 namespace gdwg {
 
@@ -44,12 +47,23 @@ namespace gdwg {
 
       //constructor
       Graph() noexcept;
-
+      Graph(
+        typename std::vector<N>::const_iterator,
+        typename std::vector<N>::const_iterator
+      );
+      Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator,
+            typename std::vector<std::tuple<N, N, E>>::const_iterator) noexcept ; //TODO
       
-
-      bool IsEmpty(){
-        return nodes_.empty();
+      //TODO:delete
+      auto get_nodes_(){
+        return nodes_;
       }
+
+      //methods
+      bool InsertNode(const N& val);
+      bool InsertEdge(const N& src, const N& dst, const E& w);
+      bool IsNode(const N& val);
+      bool IsConnected(const N& src, const N& dst);
 
     private:
       std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>> nodes_;
