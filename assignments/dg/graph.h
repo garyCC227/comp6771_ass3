@@ -52,22 +52,78 @@ namespace gdwg {
           using difference_type = int;
 
           reference operator*() const {
-            return {src_->value, dst_->value, *edge_};
+              return {outer_iterator_->first->value, inner_iterator_->first.lock()->value,
+                      inner_iterator_->second};
           }
 
           const_iterator operator++(){
+            if(outer_iterator_ != outer_end) {
+              if(std::distance(inner_iterator_, std::end(outer_iterator_->second)) > 1){
 
+                std::advance(inner_iterator_, 1);
+                for(;inner_iterator_ != std::end(outer_iterator_->second); ++inner_iterator_){
+                  auto edge_ptr = inner_iterator_->first.lock();
+                  if (edge_ptr) {
+                    return *this;
+                  }
+                }
+              }
+              //if reach end of edge set, go to next node
+              ++outer_iterator_;
+              FindValidEdgeForward();
+            }
+            return *this;
           }
 
           const_iterator operator++(int){
-
+            auto copy{*this};
+            ++(*this);
+            return copy;
           }
 
+          friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
+            bool outer_equal = (lhs.outer_iterator_ == rhs.outer_iterator_);
+            bool inner_equal = (lhs.inner_iterator_ == rhs.inner_iterator_);
+            return (outer_equal && inner_equal);
+          }
+
+          friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) {
+            return !(lhs == rhs);
+          }
+            //TODO: -- operator
+
         private:
-          explicit const_iterator(Node& src, Node& dst, E& edge):src_{src}, dst_{dst},edge_{edge}{};
-          Node* src_;
-          Node* dst_;
-          E* edge_;
+          explicit const_iterator(typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator begin,
+                                  typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator end):outer_iterator_ {begin}, outer_end{end}{
+            FindValidEdgeForward();
+          };
+
+          bool FindValidEdgeForward(){
+            for(;outer_iterator_ != outer_end;++outer_iterator_) {
+              //find and set the first valid edge
+              if (!outer_iterator_->second.empty()) {
+                //check valid edge in this node? //since we might deleteNode
+                for (inner_iterator_ = std::begin(outer_iterator_->second);
+                     inner_iterator_ != std::end(outer_iterator_->second);
+                     ++inner_iterator_
+                  ) {
+                  //stop here if we find a valid edge
+                  NodePtr ptr = inner_iterator_->first.lock();
+                  if (ptr) {
+                    return true;
+                  }
+                }
+              }
+              //if there is no valid edge, we will continue to next outer_iterator_
+            }
+            inner_iterator_ = std::end(outer_iterator_->second);
+            return false;
+          }
+
+          typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_iterator_;
+          typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_end;
+          typename EdgeSet::iterator inner_iterator_;
+
 
           friend class Graph;
       };
@@ -108,6 +164,9 @@ namespace gdwg {
       //iterator
       const_iterator cbegin();
       const_iterator cend();
+      const_iterator begin(){return cbegin();};
+      const_iterator end(){return cend();};
+
     public:
       /*
        * friends implementation
