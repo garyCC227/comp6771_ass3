@@ -309,6 +309,21 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
   //TODO:fix
 }
 
+template<typename N, typename E>
+typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& e) {
+  for(const auto& edge_itr: *this){
+    if( (std::get<0>(edge_itr) == src) &&
+        (std::get<1>(edge_itr) == dst) &&
+        (std::get<2>(edge_itr) == e)
+    ){
+      return edge_itr;
+    }
+  }
+
+  //no find
+  return *this->cend();
+}
+
 
 
 

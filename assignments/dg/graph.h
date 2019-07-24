@@ -57,7 +57,7 @@ namespace gdwg {
           }
 
           const_iterator operator++(){
-            if(outer_iterator_ != outer_end) {
+            if(outer_iterator_ != outer_end_) {
               if(std::distance(inner_iterator_, std::end(outer_iterator_->second)) > 1){
 
                 std::advance(inner_iterator_, 1);
@@ -90,16 +90,16 @@ namespace gdwg {
           friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) {
             return !(lhs == rhs);
           }
-            //TODO: -- operator
+
 
         private:
           explicit const_iterator(typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator begin,
-                                  typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator end):outer_iterator_ {begin}, outer_end{end}{
+                                  typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator end):outer_iterator_ {begin},outer_end_{end}{
             FindValidEdgeForward();
           };
 
           bool FindValidEdgeForward(){
-            for(;outer_iterator_ != outer_end;++outer_iterator_) {
+            for(;outer_iterator_ != outer_end_;++outer_iterator_) {
               //find and set the first valid edge
               if (!outer_iterator_->second.empty()) {
                 //check valid edge in this node? //since we might deleteNode
@@ -121,7 +121,7 @@ namespace gdwg {
           }
 
           typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_iterator_;
-          typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_end;
+          typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_end_;
           typename EdgeSet::iterator inner_iterator_;
 
 
@@ -158,8 +158,8 @@ namespace gdwg {
       bool erase(const N& src, const N& dst, const E& w);
       bool Replace(const N& oldData, const N& newData);
       void MergeReplace(const N& oldData, const N& newData);
-      //      const_iterator erase(const_iterator it);
-//      const_iterator find(const N&, const N&, const E&);
+      const_iterator erase(const_iterator it);//TODO: what's invalid iterator?
+      const_iterator find(const N&, const N&, const E&);
 
       //iterator
       const_iterator cbegin();
@@ -171,8 +171,15 @@ namespace gdwg {
       /*
        * friends implementation
        */
-      //TODO:: == and !=
-     friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g){
+      friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs){
+        return (lhs.nodes_ == rhs.nodes_);
+      }
+
+      friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs){
+        return !(lhs.nodes_ == rhs.nodes_);
+      }
+
+      friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g){
         for(const auto& node: g.nodes_){
           //write node value
           os << node.first->value << "(\n";
