@@ -298,6 +298,33 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
   }//TODO:check all the test case, and algorithm correct?
 }
 
+template<typename N, typename E>
+typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::cbegin() {
+  /*
+   * no print isolated node, invalid edge
+   * To find the first valid edges pair
+   */
+  for(auto begin = std::begin(nodes_);begin != std::end(nodes_); ++begin) {
+    if(nodes_[begin->first].empty()) continue;
+
+    EdgeSet& edges = begin->second();
+    for(const auto& edge : edges){
+      auto edge_ptr = edge.first.lock();
+      if(edge_ptr){
+        return gdwg::Graph<N, E>::const_iterator(begin->first.get(), edge_ptr.get(), edge.second);
+      }
+    }
+  }
+  //all empty//TODO:fix
+  return cend();
+}
+
+template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
+  return gdwg::Graph<N,E>::const_iterator(nullptr, nullptr, 0);
+  //TODO:fix
+}
+
 
 
 

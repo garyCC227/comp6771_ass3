@@ -28,6 +28,7 @@ namespace gdwg {
   //End of custom comparator
 
   //Graph implementation
+  //TODO: const correctness
   template<typename N, typename E>
   class Graph {
       // Node struct
@@ -43,7 +44,33 @@ namespace gdwg {
       using EdgeSet = std::set<EdgePair, CompareByEdgePair<EdgePair>>;
       using NodePtr = std::shared_ptr<Node>;
 
-      class const_iterator {};
+      class const_iterator {
+        public:
+          using iterator_category = std::bidirectional_iterator_tag;
+          using value_type = std::tuple<N, N, E>;
+          using reference = std::tuple<const N&, const N&, const E&>;
+          using difference_type = int;
+
+          reference operator*() const {
+            return {src_->value, dst_->value, *edge_};
+          }
+
+          const_iterator operator++(){
+
+          }
+
+          const_iterator operator++(int){
+
+          }
+
+        private:
+          explicit const_iterator(Node& src, Node& dst, E& edge):src_{src}, dst_{dst},edge_{edge}{};
+          Node* src_;
+          Node* dst_;
+          E* edge_;
+
+          friend class Graph;
+      };
 
       //constructor
       Graph() noexcept;
@@ -78,10 +105,14 @@ namespace gdwg {
       //      const_iterator erase(const_iterator it);
 //      const_iterator find(const N&, const N&, const E&);
 
+      //iterator
+      const_iterator cbegin();
+      const_iterator cend();
     public:
       /*
        * friends implementation
        */
+      //TODO:: == and !=
      friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g){
         for(const auto& node: g.nodes_){
           //write node value
