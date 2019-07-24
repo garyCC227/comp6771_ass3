@@ -7,27 +7,36 @@
 
 int main() {
   gdwg::Graph<std::string, int> g;
+  gdwg::Graph<int, int> g1{1,2,3,4};
+  gdwg::Graph<int, int> g2{5,6,7,8};
 
+  gdwg::Graph<int, int> g3{g1};
+  gdwg::Graph<int, int> g4{std::move(g2)};
+
+  g4.InsertNode(1);
+  g4 = g1;
+  std::cout << g4 << '\n';
+  std::cout << g1 <<'\n';
   //own test
 //
-  g.InsertNode("hello");
-  g.InsertNode("how");
-  g.InsertNode("are");
-
-//end of own test
-
-  g.InsertNode("how");
-  g.InsertNode("are");
-  g.InsertNode("you?");
+//  g.InsertNode("hello");
+//  g.InsertNode("how");
+//  g.InsertNode("are");
 //
-  g.InsertEdge("hello", "how", 5);
-  g.InsertEdge("hello", "are", 8);
-  g.InsertEdge("hello", "are", 2);
-
-  g.InsertEdge("how", "you?", 1);
-  g.InsertEdge("how", "hello", 4);
-
-  g.InsertEdge("are", "you?", 3);
+////end of own test
+//
+//  g.InsertNode("how");
+//  g.InsertNode("are");
+//  g.InsertNode("you?");
+////
+//  g.InsertEdge("hello", "how", 5);
+//  g.InsertEdge("hello", "are", 8);
+//  g.InsertEdge("hello", "are", 2);
+//
+//  g.InsertEdge("how", "you?", 1);
+//  g.InsertEdge("how", "hello", 4);
+//
+//  g.InsertEdge("are", "you?", 3);
 
 
 //  auto nodes = g.get_nodes_();
@@ -36,7 +45,7 @@ int main() {
 //
 //
 //  }
-  std::cout << g << '\n';
+//  std::cout << g << '\n';
 //
 //  gdwg::Graph<std::string, int> g2{g};
 //

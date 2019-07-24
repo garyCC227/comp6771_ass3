@@ -1,32 +1,71 @@
-
 #include "assignments/dg/graph.h"
 
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept :nodes_{} {}
 
 template<typename N, typename E>
-gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator begin, typename std::vector<N>::const_iterator end){
+gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator begin, typename std::vector<N>::const_iterator end) noexcept {
 //  int size = std::distance(begin, end);
 
   for(;begin != end; ++begin){
-    InsertNode(*begin); // TODO: so we ignore duplicate value,
-                        // but if we care duplicate value, put if_else
+    InsertNode(*begin); //if is duplicate value, InsertNode() will ignore it
   }
 }
 
 
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph(typename std::vector<std::tuple<N, N, E>,
-                                     std::allocator<std::tuple<N, N, E>>>::const_iterator,
+                                              std::allocator<std::tuple<N,
+                                                                        N,
+                                                                        E>>>::const_iterator begin,
                          typename std::vector<std::tuple<N, N, E>,
-                                     std::allocator<std::tuple<N,
-                                                               N,
-                                                               E>>>::const_iterator) noexcept {
-
-  //TODO
+                                              std::allocator<std::tuple<N,
+                                                                        N,
+                                                                        E>>>::const_iterator end) noexcept {
+  for(;begin !=end; ++begin){
+    //trying to check existence of node, then decide to insert
+    InsertNode(std::get<0>(*begin));
+    InsertNode(std::get<1>(*begin));
+    InsertEdge(std::get<0>(*begin), std::get<1>(*begin), std::get<2>(*begin));
+  }
 }
 
-//methods
+template <typename N, typename E>
+gdwg::Graph<N,E>::Graph(std::initializer_list<N> ls) noexcept{
+  for(const auto& l:ls){
+    InsertNode(l);
+  }
+}
+
+template<typename N, typename E>
+gdwg::Graph<N, E>::Graph(const gdwg::Graph<N, E>& old) noexcept :nodes_{old.nodes_} {
+}
+
+template<typename N, typename E>
+gdwg::Graph<N, E>::Graph(gdwg::Graph<N, E>&& old) noexcept :nodes_{std::move(old.nodes_)} {
+}
+
+template<typename N, typename E>
+gdwg::Graph<N, E>& gdwg::Graph<N,E>::operator=(const gdwg::Graph<N, E>& old) noexcept {
+  if(this != &old){
+    nodes_ = old.nodes_;
+  }
+
+  return *this;
+}
+template<typename N, typename E>
+gdwg::Graph<N, E>& gdwg::Graph<N, E>::operator=(gdwg::Graph<N, E>&& old) noexcept {
+  if(this != &old){
+    nodes_ = std::move(old.nodes_);
+  }
+  return *this;
+}
+
+/*
+ * Methods
+ */
+// node successfully insert will return true,
+// otherwise insert and return false
 template<typename N, typename E>
 bool gdwg::Graph<N, E>::InsertNode(const N& val) {
   if(!IsNode(val)){
@@ -101,4 +140,165 @@ bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst) {
   }
   return false;
 }
+template<typename N, typename E>
+std::vector<N> gdwg::Graph<N, E>::GetNodes() {
+  std::vector<N> result;
+
+  for(const auto& node: nodes_){
+    result.push_back(node.first->value);
+  }
+
+  return result;
+}
+
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::DeleteNode(const N& val) {
+  if(!IsNode(val)) return false;
+
+  for(auto begin = nodes_.begin(); begin != nodes_.end(); ++begin){
+    if(begin->first->value == val){
+      nodes_.erase(begin);
+      break;
+    }
+  }
+
+  return true;
+}
+
+template<typename N, typename E>
+void gdwg::Graph<N, E>::Clear() {
+  nodes_.clear();
+}
+
+template<typename N, typename E>
+std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) {
+  if(!IsNode(src)){
+    throw std::out_of_range("Cannot call Graph::GetConnected if src doesn't exist in the graph"); //TODO:check error info is src || the actual value of src
+  }
+
+  std::vector<N> result;
+  NodePtr src_ptr = std::make_shared<Node>(src);
+  EdgeSet edges = nodes_[src_ptr];
+
+  for(const auto& edge: edges){
+    auto edge_ptr = edge.first.lock();
+    if(edge_ptr){
+      result.push_back(edge_ptr->value);
+    }
+  }
+
+  return result;
+}
+
+template<typename N, typename E>
+std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) {
+  if(!IsNode(src) || !IsNode(dst)){
+    throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the graph"); //TODO: check error info is src or dst || the actual value
+  }
+
+  NodePtr src_ptr = std::make_shared<Node>(src);
+  EdgeSet edges = nodes_[src_ptr];
+
+  std::vector<E> result;
+  if(IsConnected(src, dst)){
+    auto predicate = [&dst](const EdgePair& edge){
+        auto dst_ptr = edge.first.lock();
+        if(dst_ptr){
+          return (dst_ptr->value == dst);
+        }
+        return false;
+    };//predicate: check is such edge exist?
+
+    //find the edge
+    auto found = std::find_if(std::begin(edges), std::end(edges), predicate);
+    if(found != std::end(edges)){
+      result.push_back(found->second);
+    }
+  } //TODO: I only do src -> dst right now
+  //TODO: only src -> dst? || it can be dst -> src?
+  return result;
+}
+
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::erase(const N& src, const N& dst, const E& w) {
+  if(!IsNode(src) || !IsNode(dst)){
+    return false;
+  }
+
+  if(!IsConnected(src, dst)){
+    return false;
+  }
+
+  //find the edge, and check the weight
+  NodePtr src_ptr = std::make_shared<Node>(src);
+  EdgeSet edges = nodes_[src_ptr];
+
+  //predicate to check dst and weight
+  auto predicate = [&dst, w](const EdgePair& edge){
+    auto edge_ptr = edge.first.lock();
+    if(edge_ptr){
+      return ( (edge_ptr->value == dst) && (edge.second == w) );
+    }
+    return false;
+  };
+
+  //find the edge pair
+  auto found = std::find_if(std::begin(edges), std::end(edges), predicate);
+  if(found != std::end(edges)){
+    //if we found it, erase it
+    edges.erase(found);
+    nodes_[src_ptr] = edges; // update edges set
+  }
+
+  //return false, since we didnt find the edge with that weight
+  return false;
+}
+
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::Replace(const N& oldData, const N& newData) {
+  if(!IsNode(oldData)){
+    throw std::runtime_error("Cannot call Graph::Replace on a node that doesn't exist");
+  }
+
+  //if newdate already exist, return false
+  if(IsNode(newData)){
+    return false;
+  }
+
+  //just update the node->value to newData
+  for(const auto& node: nodes_){
+    if(node.first->value == oldData){
+      node.first->value = newData;
+      break;
+    }
+  }
+
+  return true;
+}
+
+//remove all the incoming and outgoing edges for newData
+//change the old_node->value to newData
+template<typename N, typename E>
+void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
+  if(!IsNode(oldData) || !IsNode(newData)){
+    throw std::runtime_error("Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph"); //TODO: need to change to the actual value ???
+  }
+
+  NodePtr old_ptr = std::make_shared<Node>(oldData);
+  NodePtr new_ptr = std::make_shared<Node>(newData);
+  //remove newData node
+  nodes_.erase(new_ptr);
+
+  //update old_node->value to newData
+  for(const auto& node: nodes_){
+    if(node.first->value == oldData){
+      node.first->value = newData;
+      break;
+    }
+  }//TODO:check all the test case, and algorithm correct?
+}
+
+
+
+
 

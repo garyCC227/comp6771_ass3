@@ -50,25 +50,39 @@ namespace gdwg {
       Graph(
         typename std::vector<N>::const_iterator,
         typename std::vector<N>::const_iterator
-      );
+      ) noexcept ;
       Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator,
-            typename std::vector<std::tuple<N, N, E>>::const_iterator) noexcept ; //TODO
-      
-      //TODO:delete
-      auto get_nodes_(){
-        return nodes_;
-      }
+            typename std::vector<std::tuple<N, N, E>>::const_iterator) noexcept ; //TODO:typename
+      Graph(std::initializer_list<N>) noexcept;
+      Graph(const gdwg::Graph<N, E>&) noexcept ;
+      Graph(gdwg::Graph<N, E>&&) noexcept ;
+      ~Graph() = default;
+
+      //copy and move assignment
+      Graph& operator=(const gdwg::Graph<N, E>&) noexcept;
+      Graph& operator=(gdwg::Graph<N, E>&&) noexcept;
 
       //methods
       bool InsertNode(const N& val);
       bool InsertEdge(const N& src, const N& dst, const E& w);
       bool IsNode(const N& val);
       bool IsConnected(const N& src, const N& dst);
-//      std::vector<N> GetNodes();
+      std::vector<N> GetNodes();
+      bool DeleteNode(const N&);
+      void Clear();
+      std::vector<N> GetConnected(const N& src);
+      std::vector<E> GetWeights(const N& src, const N& dst);
+      bool erase(const N& src, const N& dst, const E& w);
+      bool Replace(const N& oldData, const N& newData);
+      void MergeReplace(const N& oldData, const N& newData);
+      //      const_iterator erase(const_iterator it);
+//      const_iterator find(const N&, const N&, const E&);
 
     public:
-      //friends
-      friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g){
+      /*
+       * friends implementation
+       */
+     friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g){
         for(const auto& node: g.nodes_){
           //write node value
           os << node.first->value << "(\n";
