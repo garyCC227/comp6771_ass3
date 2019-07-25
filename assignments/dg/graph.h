@@ -80,7 +80,72 @@ namespace gdwg {
             ++(*this);
             return copy;
           }
+          /*
+           * if begin--, then stay at begin
+           * otherwise will -- for valid edge
+           * ps: iterator in outside is always with valid edge. do not worry [from, invalid, invalid]
+           * algorithm:
+           *  if(outer_end):
+           *    --outer first, then find a valid edge iterator to return,FinvaValidBackward()
+           *  else:
+           *    //-- to find prev valid edge in the curr edgeSet
+           *    if(not at the begin of edgeSet):
+           *        --iter;
+           *        for(iter != begin of edgeSet):
+           *            if(valid):
+           *              return
+           *             else:
+           *              continue
+           *        //reach the begin of edgeSet here
+           *        check the begin element of this edgeSet:
+           *          if (valid):
+           *            return
+           *
+           *    else: //if at the begin of edgeSet
+           *      if(outer == outer_begin): // so no more entity to check
+           *        return;
+           *      else: //still more entity to check
+           *        --outer first, then find prev valid edge iterator, FinvaValidBackward()
+           */
+          const_iterator operator--(){
+            //if begin == end all the time -> return segmentation fault
+            if(outer_iterator_ == outer_end_){
+              --outer_iterator_;
+              FindValidEdgeBackward();
+            }else {
+              if (std::distance(inner_iterator_, std::begin(outer_iterator_->second))> 0 ) {
+                std::advance(inner_iterator_, -1 );
+                for (; inner_iterator_ != std::begin(outer_iterator_->second);
+                       --inner_iterator_
+                  ) {
+                  //stop here if we find a valid edge
+                  NodePtr ptr = inner_iterator_->first.lock();
+                  if (ptr) {
+                    return *this;
+                  }
+                }
+                //we still left the head element to check, if we reach here
+                NodePtr ptr = inner_iterator_->first.lock();
+                if (ptr) {
+                  return *this;
+                }
 
+              }else{
+                if(outer_iterator_ != outer_begin_) {
+                  --outer_iterator_;
+                  FindValidEdgeBackward();
+                }
+              }
+            }
+            return *this;
+          }
+
+          const_iterator operator--(int){
+            auto copy{*this};
+            --(*this);
+            return copy;
+          }
+          //TODO: compare too less field. FIX
           friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
             bool outer_equal = (lhs.outer_iterator_ == rhs.outer_iterator_);
             bool inner_equal = (lhs.inner_iterator_ == rhs.inner_iterator_);
@@ -93,8 +158,9 @@ namespace gdwg {
 
 
         private:
-          explicit const_iterator(typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator begin,
-                                  typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator end):outer_iterator_ {begin},outer_end_{end}{
+          explicit const_iterator(typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator curr,
+                                  typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator begin,
+                                  typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator end):outer_iterator_ {curr},outer_begin_{begin},outer_end_{end}{
             FindValidEdgeForward();
           };
 
@@ -120,13 +186,76 @@ namespace gdwg {
             return false;
           }
 
+          /*
+           * so we only have -- operator to call this function,
+           * and Assumption: whenever we call this function -> outer_iterator != outer_begin && outer_end
+           */
+          bool FindValidEdgeBackward(){
+            for (; outer_iterator_ != outer_begin_; --outer_iterator_) {
+              //find and set the first valid edge
+              if (!outer_iterator_->second.empty()) {
+                //check valid edge in this node? //since we might deleteNode
+                if(findValidInEdgeSetBackward()) {
+                  return true;
+                }
+
+              }
+              // left outer.begin() to check, if we reach here
+              //assign to last element of edge set,
+              //now outer_iterator == begin
+              if (!outer_iterator_->second.empty()) {
+                if(findValidInEdgeSetBackward()) {
+                  return true;
+                }
+              }
+            }
+            //reach here, mean cannot find a valid edge from the whole nodes_ map
+            return false;
+          }
+
+          /*
+           * algorithm:
+           *   assign to last element of this edge set
+           *   for(!=begin):
+           *      if(valid edege):
+           *        return true;
+           *   //reach here, we are at the begin of edeg set
+           *   if(begin is valid edge):
+           *      return true;
+           *   return false;
+           */
+          bool findValidInEdgeSetBackward(){
+            //assign to last element of edge set
+            inner_iterator_ = std::end(outer_iterator_->second);
+            std::advance(inner_iterator_, -1 );
+            for (; inner_iterator_ != std::begin(outer_iterator_->second);
+                   --inner_iterator_
+              ) {
+              //stop here if we find a valid edge
+              NodePtr ptr = inner_iterator_->first.lock();
+              if (ptr) {
+                return true;
+              }
+            }
+            //we still left the head element to check, if we reach here
+            NodePtr ptr = inner_iterator_->first.lock();
+            if (ptr) {
+              return true;
+            }
+
+            return false;
+          }
+
           typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_iterator_;
+          typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_begin_;
           typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_end_;
           typename EdgeSet::iterator inner_iterator_;
 
 
           friend class Graph;
-      };
+      };// end of iterator class
+
+      using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
       //constructor
       Graph() noexcept;
@@ -135,7 +264,7 @@ namespace gdwg {
         typename std::vector<N>::const_iterator
       ) noexcept ;
       Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator,
-            typename std::vector<std::tuple<N, N, E>>::const_iterator) noexcept ; //TODO:typename
+            typename std::vector<std::tuple<N, N, E>>::const_iterator) noexcept ;
       Graph(std::initializer_list<N>) noexcept;
       Graph(const gdwg::Graph<N, E>&) noexcept ;
       Graph(gdwg::Graph<N, E>&&) noexcept ;
@@ -166,6 +295,10 @@ namespace gdwg {
       const_iterator cend();
       const_iterator begin(){return cbegin();};
       const_iterator end(){return cend();};
+      const_reverse_iterator crbegin() const { return const_reverse_iterator{cend()}; }
+      const_reverse_iterator crend() const { return const_reverse_iterator{cbegin()}; }
+      const_reverse_iterator rbegin() const { return crbegin(); }
+      const_reverse_iterator rend() const { return crend(); }
 
     public:
       /*

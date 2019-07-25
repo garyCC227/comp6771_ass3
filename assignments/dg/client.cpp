@@ -17,24 +17,31 @@ int main() {
 //  g4 = g1;
 
 //
-  g.InsertNode("a");
-  g.InsertNode("b");
-  g.InsertNode("c");
-//
+  //
 ////end of own test
 //
-//  g.InsertNode("how");
-//  g.InsertNode("are");
-//  g.InsertNode("you?");
+  g.InsertNode("how");
+  g.InsertNode("are");
+  g.InsertNode("you?");
+  g.InsertNode("hello");
 ////
-  g.InsertEdge("a", "b", 5);
-  g.InsertEdge("a", "c", 8);
-//  g.InsertEdge("hello", "are", 2);
+//  g.InsertNode("a");
+//  g.InsertNode("b");
+//  g.InsertNode("c");
+
+//  g.InsertEdge("a", "b", 5);
+//  g.InsertEdge("a", "c", 8);
+//  auto iter = g.begin();
+//  --iter;
+//  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+
+  g.InsertEdge("hello", "are", 2);
 //
-//  g.InsertEdge("how", "you?", 1);
-//  g.InsertEdge("how", "hello", 4);
-//
-//  g.InsertEdge("are", "you?", 3);
+  g.InsertEdge("how", "you?", 1);
+  g.InsertEdge("how", "hello", 4);
+
+  g.InsertEdge("are", "you?", 3);
+
 
 
 //  std::cout << g << '\n';
@@ -46,8 +53,8 @@ int main() {
   // This is a structured binding.
   // https://en.cppreference.com/w/cpp/language/structured_binding
   // It allows you to unpack your tuple.
-  for (const auto& [from, to, weight] : g) {
-    std::cout << from << " -> " << to << " (weight " << weight << ")\n";
-  }
+//  for (const auto& [from, to, weight] : g) {
+//    std::cout << from << " -> " << to << " (weight " << weight << ")\n";
+//  }
 
 }
