@@ -274,11 +274,11 @@ class Graph {
   // methods
   bool InsertNode(const N& val) noexcept ;
   bool InsertEdge(const N& src, const N& dst, const E& w);
-  bool IsNode(const N& val) const;
+  bool IsNode(const N& val) const noexcept ;
   bool IsConnected(const N& src, const N& dst);
-  std::vector<N> GetNodes();
-  bool DeleteNode(const N&);
-  void Clear();
+  std::vector<N> GetNodes() noexcept;
+  bool DeleteNode(const N&) noexcept;
+  void Clear() noexcept ;
   std::vector<N> GetConnected(const N& src);
   std::vector<E> GetWeights(const N& src, const N& dst);
   bool erase(const N& src, const N& dst, const E& w);
@@ -317,7 +317,7 @@ class Graph {
       for (const auto& edge : node.second) {
         auto dst_ptr = edge.first.lock();
         if (dst_ptr) {
-          os << " "  << node.first->value << "=" << edge.second << "=>" <<dst_ptr->value << " ";
+          os << " "  << node.first->value << "--" << edge.second << "-->" <<dst_ptr->value << " ";
         }
       }
 

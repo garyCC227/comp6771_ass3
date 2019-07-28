@@ -112,7 +112,7 @@ bool gdwg::Graph<N, E>::InsertEdge(const N& src, const N& dst, const E& w) {
 
 // true if node exist, false otherwise
 template<typename N, typename E>
-bool gdwg::Graph<N, E>::IsNode(const N& val) const {
+bool gdwg::Graph<N, E>::IsNode(const N& val) const noexcept{
   auto curr = std::make_shared<Node>(val);
 
   // find if graph map has this key
@@ -152,7 +152,7 @@ bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst) {
 }
 
 template<typename N, typename E>
-std::vector<N> gdwg::Graph<N, E>::GetNodes() {
+std::vector<N> gdwg::Graph<N, E>::GetNodes() noexcept{
   std::vector<N> result;
 
   for (const auto& node : nodes_) {
@@ -163,7 +163,7 @@ std::vector<N> gdwg::Graph<N, E>::GetNodes() {
 }
 
 template<typename N, typename E>
-bool gdwg::Graph<N, E>::DeleteNode(const N& val) {
+bool gdwg::Graph<N, E>::DeleteNode(const N& val) noexcept{
   if (!IsNode(val))
     return false;
 
@@ -178,7 +178,7 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& val) {
 }
 
 template<typename N, typename E>
-void gdwg::Graph<N, E>::Clear() {
+void gdwg::Graph<N, E>::Clear() noexcept {
   nodes_.clear();
 }
 
