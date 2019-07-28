@@ -2,24 +2,16 @@
 #include <string>
 
 #include "assignments/dg/graph.h"
+#include <cassert>
 
 // Note: At the moment, there is no client.sampleout. Please do your own testing
 
 int main() {
-  gdwg::Graph<std::string, int> g;
-//  gdwg::Graph<int, int> g1{1,2,3,4};
-//  gdwg::Graph<int, int> g2{5,6,7,8};
-//
-//  gdwg::Graph<int, int> g3{g1};
-//  gdwg::Graph<int, int> g4{std::move(g2)};
-//
-//  g4.InsertNode(1);
-//  g4 = g1;
 
-//
-  //
-////end of own test
-//
+
+  // ========================== test constructor ========================
+  gdwg::Graph<std::string, int> g;
+
   std::cout << "insert node 'how' succeed? => " << g.InsertNode("how") << "\n";
   std::cout << "insert node 'are' succeed? => " << g.InsertNode("are") << "\n";
   std::cout << "insert node 'you?' succeed? => " << g.InsertNode("you?") << "\n";
@@ -31,19 +23,28 @@ int main() {
   std::cout << "insert are<-3->you? succeed? => " << g.InsertEdge("are", "you?", 3) << "\n";
   std::cout << g << '\n';
 
-//  g.InsertEdge("a", "c", 8);
-//  g.InsertEdge("a", "b", 5)
-//  g.InsertNode("a")
-//  g.InsertNode("b");
-//  g.InsertNode("c");
+  g.InsertNode("a");
+  g.InsertNode("b");
+  g.InsertNode("c");
+  g.InsertEdge("a", "c", 8);
+  g.InsertEdge("a", "b", 5);
+
+  std::cout << g << '\n';
+
+  gdwg::Graph<int, int> g1{1,2,3,4};
+  std::cout << g1 << "\n";
+  gdwg::Graph<int, int> g2{5,6,7,8};
+  gdwg::Graph<int, int> g3{g1};
+  std::cout << g3 << "\n";
+  gdwg::Graph<int, int> g4{std::move(g2)};
+  std::cout << g4 << "\n";
+  assert(g2.GetNodes().size() == 0);
+
+
 
 //  auto iter = g.begin();
 //  --iter;
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
-
-//  gdwg::Graph<std::string, int> g2{g};
-//
-//  std::cout << g2 << "\n";
 
   // This is a structured binding.
   // https://en.cppreference.com/w/cpp/language/structured_binding

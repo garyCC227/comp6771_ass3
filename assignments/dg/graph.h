@@ -274,8 +274,8 @@ class Graph {
   // methods
   bool InsertNode(const N& val) noexcept ;
   bool InsertEdge(const N& src, const N& dst, const E& w);
-  bool isNode(const N& val) const;
-  bool isConnected(const N& src, const N& dst);
+  bool IsNode(const N& val) const;
+  bool IsConnected(const N& src, const N& dst);
   std::vector<N> GetNodes();
   bool DeleteNode(const N&);
   void Clear();
@@ -312,16 +312,16 @@ class Graph {
 
     for (const auto& node : g.nodes_) {
       // write node value
-      os << node.first->value << "(\n";
+      os << node.first->value << ": {";
       // write edges
       for (const auto& edge : node.second) {
         auto dst_ptr = edge.first.lock();
         if (dst_ptr) {
-          os << "  " << dst_ptr->value << " | " << edge.second << '\n';
+          os << " "  << node.first->value << "=" << edge.second << "=>" <<dst_ptr->value << " ";
         }
       }
 
-      os << ")\n";
+      os << "}\n";
     }
 
     return os;
