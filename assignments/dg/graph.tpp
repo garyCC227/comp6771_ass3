@@ -394,6 +394,6 @@ typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg
   }
 
   //return here, mean we cannot find one to remove, so we just return cend()
-  //e.g if someone pass a cend() into this function
+  //e.g if someone pass a cend() into this function.
   return cend();
 }
