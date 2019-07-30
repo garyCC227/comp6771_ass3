@@ -1,6 +1,9 @@
+
 #include "assignments/dg/graph.h"
+
 #include <iostream>
 #include <algorithm>
+
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
@@ -358,26 +361,53 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
 }
 
 template <typename N, typename E>
-typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  {
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  const{
   return gdwg::Graph<N, E>::const_iterator(nodes_.begin(), nodes_.begin(), nodes_.end());
 }
 
 template <typename N, typename E>
-typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
-  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
-  // TODO:fix
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const{
+  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.begin(), nodes_.end());
 }
 //
-//template <typename N, typename E>
-//typename gdwg::Graph<N, E>::const_iterator
-//gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& e) {
-//  for (const auto& edge_itr : *this) {
-//    if ((std::get<0>(edge_itr) == src) && (std::get<1>(edge_itr) == dst) &&
-//        (std::get<2>(edge_itr) == e)) {
-//      return edge_itr;
-//    }
-//  }
-//
-//  // no find
-//  return *this->cend();
-//}
+template <typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator
+gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& e) const{
+  for(auto it = cbegin(); it != cend(); ++it){
+    //compare src
+    if (std::get<0>(*it) != src) continue;
+    //compare dst
+    if(std::get<1>(*it) != dst) continue;
+    //compare weight
+    if(std::get<2>(*it) == e) return it;
+  }
+
+  //reach here, -> we cannot find a valid edge
+  return cend();
+}
+template<typename N, typename E>
+typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg::Graph<N,E>::const_iterator it) {
+  //for clean code, we using reference here
+  const auto& src = std::get<0>(*it);
+  const auto& dst = std::get<1>(*it);
+  const auto& e = std::get<2>(*it);
+
+  //iterator through the whole graph
+  for(auto iter = cbegin(); iter != cend(); ++iter){
+    //compare src
+    if (std::get<0>(*it) != src) continue;
+    //compare dst
+    if(std::get<1>(*it) != dst) continue;
+    //compare weight
+    if(std::get<2>(*it) == e){
+      //erase the edge by value
+      erase(src, dst, e);
+      //return the iterator after the one we just removed
+      return (++it);
+    }
+  }
+
+  //return here, mean we cannot find one to remove, so we just return cend()
+  //e.g if someone pass a cend() into this function.
+  return cend();
+}
