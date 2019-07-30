@@ -85,26 +85,38 @@ int main() {
 //
 //  // TODO: replace and merge replace
 
-  gdwg::Graph<std::string, int> g;
+//  //TODO:issued: we dont have method for const graph
+//  std::string s1{"Hello"};
+//  std::string s2{"how"};
+//  std::string s3{"are"};
+//  auto e1 = std::make_tuple(s1, s2, 5.4);
+//  auto e2 = std::make_tuple(s2, s3, 7.6);
+//  auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2};
+//  const gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+//
+//  auto iter = g.cend();
+//  //end of issued
 
-  g.InsertNode("a");
-  g.InsertNode("b");
-  g.InsertNode("c");
-  g.InsertEdge("a", "c", 8);
-  g.InsertEdge("a", "b", 5);
-  auto iter = g.end();
-   ++iter;
+//  g.InsertNode("a");
+//  g.InsertNode("b");
+//  g.InsertNode("c");
+//  g.InsertEdge("a", "c", 8);
+//  g.InsertEdge("a", "b", 5);
+//  auto iter = g.end();
+//  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight "
+//              << std::get<2>(*iter) << ")\n";
+//   ++iter;
 //  for(;iter != g.crend(); ++iter) {
 //    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight "
 //              << std::get<2>(*iter) << ")\n";
 //  }
 
-  std::cout << (iter == g.end()) << '\n';
+//  std::cout << (iter == g.end()) << '\n';
   // This is a structured binding.
   // https://en.cppreference.com/w/cpp/language/structured_binding
   // It allows you to unpack your tuple.
-  for (const auto& [from, to, weight] : g) {
-    std::cout << from << " -> " << to << " (weight " << weight << ")\n";
-  }
+//  for (const auto& [from, to, weight] : g) {
+//    std::cout << from << " -> " << to << " (weight " << weight << ")\n";
+//  }
 
 }
