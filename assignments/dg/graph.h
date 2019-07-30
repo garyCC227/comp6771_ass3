@@ -42,7 +42,7 @@ class Graph {
   using EdgePair = std::pair<std::weak_ptr<Node>, E>;
   using EdgeSet = std::set<EdgePair, CompareByEdgePair<EdgePair>>;//,
   using NodePtr = std::shared_ptr<Node>;
-/*
+
 
   class const_iterator {
    public:
@@ -80,7 +80,7 @@ class Graph {
       ++(*this);
       return copy;
     }
-    */
+
 /*
      * if begin--, then stay at begin
      * otherwise will -- for valid edge
@@ -107,7 +107,7 @@ class Graph {
      *        return;
      *      else: //still more entity to check
      *        --outer first, then find prev valid edge iterator, FinvaValidBackward()
-     *//*
+     */
 
     const_iterator operator--() {
       // if begin == end all the time -> return segmentation fault
@@ -185,11 +185,11 @@ class Graph {
       return false;
     }
 
-    */
+
 /*
      * so we only have -- operator to call this function,
      * and Assumption: whenever we call this function -> outer_iterator != outer_begin && outer_end
-     *//*
+     */
 
     bool FindValidEdgeBackward() {
       for (; outer_iterator_ != outer_begin_; --outer_iterator_) {
@@ -213,7 +213,7 @@ class Graph {
       return false;
     }
 
-    */
+
 /*
      * algorithm:
      *   assign to last element of this edge set
@@ -224,7 +224,7 @@ class Graph {
      *   if(begin is valid edge):
      *      return true;
      *   return false;
-     *//*
+     */
 
     bool findValidInEdgeSetBackward() {
       // assign to last element of edge set
@@ -253,7 +253,7 @@ class Graph {
 
     friend class Graph;
   };  // end of iterator class
-*/
+
 
 //  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -283,15 +283,15 @@ class Graph {
   std::vector<E> GetWeights(const N& src, const N& dst);
   bool erase(const N& src, const N& dst, const E& w);
   bool Replace(const N& oldData, const N& newData);
-  void MergeReplace(const N& oldData, const N& newData);
+  void MergeReplace(const N&, const N&);
 //  const_iterator erase(const_iterator it);  // TODO: what's invalid iterator?
 //  const_iterator find(const N&, const N&, const E&);
 
   // iterator
-//  const_iterator cbegin();
-//  const_iterator cend();
-//  const_iterator begin() { return cbegin(); };
-//  const_iterator end() { return cend(); };
+  const_iterator cbegin();
+  const_iterator cend();
+  const_iterator begin() { return cbegin(); };
+  const_iterator end() { return cend(); };
 //  const_reverse_iterator crbegin() const { return const_reverse_iterator{cend()}; }
 //  const_reverse_iterator crend() const { return const_reverse_iterator{cbegin()}; }
 //  const_reverse_iterator rbegin() const { return crbegin(); }
@@ -317,7 +317,7 @@ class Graph {
       for (const auto& edge : node.second) {
         auto dst_ptr = edge.first.lock();
         if (dst_ptr) {
-          os << " "  << node.first->value << "--" << edge.second << "-->" <<dst_ptr->value << " ";
+          os << " " << edge.second << "-->" <<dst_ptr->value << " ";
         }
       }
 

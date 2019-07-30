@@ -50,7 +50,7 @@ int main() {
   std::cout << ">>>>>>>g4\n" << g4 << "\n";
   std::cout << ">>>>>>>g6\n" << g6 << "\n";
 
-  // TODO: leftwith interator constructor
+  // TODO: interator constructor
   std::vector<std::string> v{"Hello", "how", "are", "you"};
   gdwg::Graph<std::string, double> g7 {v.begin(), v.end()};
   std::cout << ">>>>>>>g7\n" << g7 << "\n";
@@ -84,8 +84,18 @@ int main() {
   }
 
   // TODO: replace and merge replace
-
-
+  auto e3 = std::make_tuple("A", "B", 5);
+  auto e4 = std::make_tuple("A", "C", 6);
+  auto e5 = std::make_tuple("A", "D", 7);
+  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5};
+  gdwg::Graph<std::string, double> g_mergeReplace {v_tmp.begin(), v_tmp.end()};
+  g_mergeReplace.InsertEdge("C", "B", 10);
+  g_mergeReplace.InsertEdge("B", "D", 1);
+  g_mergeReplace.InsertEdge("D", "A", 10);
+  g_mergeReplace.InsertEdge("A", "A", 10);
+  std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
+  g_mergeReplace.MergeReplace("A", "B");
+  std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
 
 //  auto iter = g.begin();
 //  --iter;

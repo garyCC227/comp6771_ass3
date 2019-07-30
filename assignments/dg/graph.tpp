@@ -1,5 +1,5 @@
 #include "assignments/dg/graph.h"
-
+#include <iostream>
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
@@ -301,18 +301,47 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
                              "exist in the graph");  // TODO: need to change to the actual value ???
   }
 
-  NodePtr old_ptr = std::make_shared<Node>(oldData);
-  NodePtr new_ptr = std::make_shared<Node>(newData);
-  // remove newData node
-  nodes_.erase(new_ptr);
+  auto old_ptr = std::make_shared<Node>(oldData);
+  auto new_ptr = std::make_shared<Node>(newData);
+//  auto zzz_ptr =
 
-  // update old_node->value to newData
+
+//  auto old_edgeSet = nodes_[old_ptr];
+//  auto new_edgeSet = nodes_[new_ptr];
+//  nodes_[new_ptr] = old_edgeSet;
+
+  // remove entry_to_be_replaced TODO: check if old edges need tobe removed
+  nodes_.erase(new_ptr);
   for (const auto& node : nodes_) {
     if (node.first->value == oldData) {
       node.first->value = newData;
       break;
     }
-  }  // TODO:check all the test case, and algorithm correct?
+  }
+//  auto nodeHandler = nodes_.extract(new_ptr);
+//  nodeHandler.key() = new_ptr;//std::make_unique<Node>("Z");
+//  nodes_.insert(std::move(nodeHandler));
+
+
+//
+  // iterate the map and change the share ptr to new
+//  for (auto& entry : nodes_) {
+//    // bypass the old entry (delete later anyway)
+//    if (entry.first->value == oldData) continue;
+//    for (auto& edge : entry.second) {
+//      auto dst_ptr = edge.first.lock();
+//
+//      // need to change the ptr reference not just value
+//      if (dst_ptr->value == oldData) {
+//        std::weak_ptr<Node> tmp = new_ptr;
+////        dst_ptr = new_ptr;
+////        edge.first = tmp;
+//
+////        std::cout << dst_ptr << " " << new_ptr << "\n";
+//      }
+//    }
+//  }
+//  nodes_.erase(oldData);
 }
 
 //template <typename N, typename E>
