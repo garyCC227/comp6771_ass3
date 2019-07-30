@@ -253,7 +253,8 @@ class Graph {
 
     friend class Graph;
   };  // end of iterator class
-*/
+//
+ */
 
 //  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
