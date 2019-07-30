@@ -1,5 +1,6 @@
 #include "assignments/dg/graph.h"
 #include <iostream>
+#include <algorithm>
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
@@ -305,21 +306,28 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
   auto new_ptr = std::make_shared<Node>(newData);
 //  auto zzz_ptr =
 
+//  std::set<EdgePair, CompareByEdgePair<EdgePair>>
+  auto new_edgeSet = nodes_[std::make_shared<Node>("E")];
+  auto it = new_edgeSet.begin();
+  std::cout << (*it).second;
 
-  auto old_edgeSet = nodes_[old_ptr];
-  auto new_edgeSet = nodes_[new_ptr];
-  nodes_[new_ptr] = old_edgeSet;
+  auto src_entity = nodes_.find(old_ptr);
+  src_entity->second.insert(new_edgeSet.begin(), new_edgeSet.end());
+//  std::weak_ptr<Node> dst_wp = dst_entity->first;
+//  src_entity->second.insert((std::make_pair(dst_wp, w)));
+//  nodes_[old_ptr].insert()
   // create a new set and append to old then change value
   //  set a{};
 
   // remove entry_to_be_replaced TODO: check if old edges need tobe removed
-  nodes_.erase(new_ptr);
-  for (const auto& node : nodes_) {
-    if (node.first->value == oldData) {
-      node.first->value = newData;
-      break;
-    }
-  }
+
+//  nodes_.erase(new_ptr);
+//  for (const auto& node : nodes_) {
+//    if (node.first->value == oldData) {
+//      node.first->value = newData;
+//      break;
+//    }
+//  }
 //  auto nodeHandler = nodes_.extract(new_ptr);
 //  nodeHandler.key() = new_ptr;//std::make_unique<Node>("Z");
 //  nodes_.insert(std::move(nodeHandler));

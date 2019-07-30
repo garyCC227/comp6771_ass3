@@ -157,7 +157,8 @@ int main() {
   auto e3 = std::make_tuple("A", "B", 5);
   auto e4 = std::make_tuple("A", "C", 6);
   auto e5 = std::make_tuple("A", "D", 7);
-  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5};
+  auto e6 = std::make_tuple("E", "C", 7);
+  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5, e6};
   gdwg::Graph<std::string, double> g_mergeReplace {v_tmp.begin(), v_tmp.end()};
   g_mergeReplace.InsertEdge("C", "B", 10);
   g_mergeReplace.InsertEdge("B", "D", 1);
