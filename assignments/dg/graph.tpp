@@ -315,16 +315,16 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
   }  // TODO:check all the test case, and algorithm correct?
 }
 
-//template <typename N, typename E>
-//typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() {
-//  return gdwg::Graph<N, E>::const_iterator(nodes_.begin(), nodes_.begin(), nodes_.end());
-//}
-//
-//template <typename N, typename E>
-//typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
-//  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
-//  // TODO:fix
-//}
+template <typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  {
+  return gdwg::Graph<N, E>::const_iterator(nodes_.begin(), nodes_.begin(), nodes_.end());
+}
+
+template <typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
+  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
+  // TODO:fix
+}
 //
 //template <typename N, typename E>
 //typename gdwg::Graph<N, E>::const_iterator
