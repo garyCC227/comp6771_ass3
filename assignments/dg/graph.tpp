@@ -306,21 +306,25 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
 //  auto zzz_ptr =
 
 
-//  auto old_edgeSet = nodes_[old_ptr];
-//  auto new_edgeSet = nodes_[new_ptr];
-//  nodes_[new_ptr] = old_edgeSet;
+  auto old_edgeSet = nodes_[old_ptr];
+  auto new_edgeSet = nodes_[new_ptr];
+  nodes_[new_ptr] = old_edgeSet;
 
   // remove entry_to_be_replaced TODO: check if old edges need tobe removed
-  nodes_.erase(new_ptr);
-  for (const auto& node : nodes_) {
-    if (node.first->value == oldData) {
-      node.first->value = newData;
-      break;
-    }
-  }
+//  nodes_.erase(old_ptr);
+//  for (const auto& node : nodes_) {
+//    if (node.first->value == oldData) {
+//      node.first->value = newData;
+//      break;
+//    }
+//  }
 //  auto nodeHandler = nodes_.extract(new_ptr);
 //  nodeHandler.key() = new_ptr;//std::make_unique<Node>("Z");
 //  nodes_.insert(std::move(nodeHandler));
+
+  for (const auto&  edge: new_edgeSet) {
+
+  }
 
 
 //
@@ -332,8 +336,8 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
 //      auto dst_ptr = edge.first.lock();
 //
 //      // need to change the ptr reference not just value
-//      if (dst_ptr->value == oldData) {
-//        std::weak_ptr<Node> tmp = new_ptr;
+//      if (dst_ptr->value == newData) {
+////        std::weak_ptr<Node> tmp = new_ptr;
 ////        dst_ptr = new_ptr;
 ////        edge.first = tmp;
 //
@@ -341,19 +345,18 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
 //      }
 //    }
 //  }
-//  nodes_.erase(oldData);
 }
 
-//template <typename N, typename E>
-//typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() {
-//  return gdwg::Graph<N, E>::const_iterator(nodes_.begin(), nodes_.begin(), nodes_.end());
-//}
-//
-//template <typename N, typename E>
-//typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
-//  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
-//  // TODO:fix
-//}
+template <typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  {
+  return gdwg::Graph<N, E>::const_iterator(nodes_.begin(), nodes_.begin(), nodes_.end());
+}
+
+template <typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
+  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
+  // TODO:fix
+}
 //
 //template <typename N, typename E>
 //typename gdwg::Graph<N, E>::const_iterator

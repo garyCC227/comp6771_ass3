@@ -49,13 +49,19 @@ class Graph {
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = std::tuple<N, N, E>;
     using reference = std::tuple<const N&, const N&, const E&>;
+    using pointer = std::tuple<N, N, E>*;
     using difference_type = int;
 
+    //TODO: do we need to get value of end()??
     reference operator*() const {
       return {outer_iterator_->first->value, inner_iterator_->first.lock()->value,
               inner_iterator_->second};
     }
 
+    //TODO: test case
+    pointer operator->() const { return &(operator*()); }
+
+    // prefix
     const_iterator operator++() {
       if (outer_iterator_ != outer_end_) {
         if (std::distance(inner_iterator_, std::end(outer_iterator_->second)) > 1) {
@@ -75,45 +81,18 @@ class Graph {
       return *this;
     }
 
+    // postfix
     const_iterator operator++(int) {
       auto copy{*this};
       ++(*this);
       return copy;
     }
 
-/*
-     * if begin--, then stay at begin
-     * otherwise will -- for valid edge
-     * ps: iterator in outside is always with valid edge. do not worry [from, invalid, invalid]
-     * algorithm:
-     *  if(outer_end):
-     *    --outer first, then find a valid edge iterator to return,FinvaValidBackward()
-     *  else:
-     *    //-- to find prev valid edge in the curr edgeSet
-     *    if(not at the begin of edgeSet):
-     *        --iter;
-     *        for(iter != begin of edgeSet):
-     *            if(valid):
-     *              return
-     *             else:
-     *              continue
-     *        //reach the begin of edgeSet here
-     *        check the begin element of this edgeSet:
-     *          if (valid):
-     *            return
-     *
-     *    else: //if at the begin of edgeSet
-     *      if(outer == outer_begin): // so no more entity to check
-     *        return;
-     *      else: //still more entity to check
-     *        --outer first, then find prev valid edge iterator, FinvaValidBackward()
-     */
-
     const_iterator operator--() {
       // if begin == end all the time -> return segmentation fault
       if (outer_iterator_ == outer_end_) {
-        --outer_iterator_;
-        FindValidEdgeBackward();
+        --outer_iterator_; //--outer_iter, then call find FindValidEdgeBackward()
+        FindValidEdgeBackward(); //so we are not at the outer_end
       } else {
         if (std::distance(inner_iterator_, std::begin(outer_iterator_->second)) > 0) {
           std::advance(inner_iterator_, -1);
@@ -135,6 +114,7 @@ class Graph {
             --outer_iterator_;
             FindValidEdgeBackward();
           }
+          //if we are at outer_begin; we did not call FindValidEdgeBackward()
         }
       }
       return *this;
@@ -165,6 +145,11 @@ class Graph {
       FindValidEdgeForward();
     };
 
+    /*
+     * whenever we call this function, we are at the begin of curr level of edgeSet
+     * To: find a valid edge to return
+     * - if we cannot find one in the curr edgeSet, we will go to next level of edgeSet
+     */
     bool FindValidEdgeForward() {
       for (; outer_iterator_ != outer_end_; ++outer_iterator_) {
         // find and set the first valid edge
@@ -186,9 +171,13 @@ class Graph {
     }
 
 
-/*
+    /*
      * so we only have -- operator to call this function,
      * and Assumption: whenever we call this function -> outer_iterator != outer_begin && outer_end
+     * so function is used to:
+     * -when we enter a new level of outer, we continuously to find
+     * a valid edge to return (in the curr edgeSet)
+     * - if cannot find one in this edgeSet, we go to previous level
      */
 
     bool FindValidEdgeBackward() {
@@ -213,18 +202,6 @@ class Graph {
       return false;
     }
 
-
-/*
-     * algorithm:
-     *   assign to last element of this edge set
-     *   for(!=begin):
-     *      if(valid edege):
-     *        return true;
-     *   //reach here, we are at the begin of edeg set
-     *   if(begin is valid edge):
-     *      return true;
-     *   return false;
-     */
 
     bool findValidInEdgeSetBackward() {
       // assign to last element of edge set
@@ -255,7 +232,7 @@ class Graph {
   };  // end of iterator class
 
 
-//  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   // constructor
   Graph() noexcept;
@@ -287,15 +264,16 @@ class Graph {
 //  const_iterator erase(const_iterator it);  // TODO: what's invalid iterator?
 //  const_iterator find(const N&, const N&, const E&);
 
-  // iterator
+
+  // iterator //TODO:const correctness ??
   const_iterator cbegin();
   const_iterator cend();
   const_iterator begin() { return cbegin(); };
   const_iterator end() { return cend(); };
-//  const_reverse_iterator crbegin() const { return const_reverse_iterator{cend()}; }
-//  const_reverse_iterator crend() const { return const_reverse_iterator{cbegin()}; }
-//  const_reverse_iterator rbegin() const { return crbegin(); }
-//  const_reverse_iterator rend() const { return crend(); }
+  const_reverse_iterator crbegin()  { return const_reverse_iterator{cend()}; }
+  const_reverse_iterator crend()  { return const_reverse_iterator{cbegin()}; }
+  const_reverse_iterator rbegin() { return crbegin(); }
+  const_reverse_iterator rend()  { return crend(); }
 
   /*
    * friends implementation
