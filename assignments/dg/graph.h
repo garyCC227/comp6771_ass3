@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 namespace gdwg {
 
@@ -52,13 +53,13 @@ class Graph {
     using pointer = std::tuple<N, N, E>*;
     using difference_type = int;
 
-    //TODO: do we need to get value of end()??
+
     reference operator*() const {
       return {outer_iterator_->first->value, inner_iterator_->first.lock()->value,
               inner_iterator_->second};
     }
 
-    //TODO: test case
+    //TODO: test case, dunno what to do
     pointer operator->() const { return &(operator*()); }
 
     const_iterator operator++() {
@@ -73,7 +74,7 @@ class Graph {
             }
           }
         }
-        // if reach end of edge set, go to next node
+        // if reach end of edge set, go to next entity
         ++outer_iterator_;
         FindValidEdgeForward();
       }
@@ -114,7 +115,6 @@ class Graph {
      *        --outer first, then find prev valid edge iterator, FinvaValidBackward()
      */
     const_iterator operator--() {
-      // if begin == end all the time -> return segmentation fault
       if (outer_iterator_ == outer_end_) {
         --outer_iterator_; //--outer_iter, then call find FindValidEdgeBackward()
         FindValidEdgeBackward(); //so we are not at the outer_end
@@ -162,22 +162,43 @@ class Graph {
     }
 
    private:
-    explicit const_iterator(
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator curr,
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator begin,
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator end)
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_iterator_;
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_begin_;
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_end_;
+    typename EdgeSet::const_iterator inner_iterator_;
+
+    friend class Graph;
+
+    const_iterator(
+        const decltype(outer_iterator_)& curr,
+        const decltype(outer_begin_)& begin,
+        const decltype(outer_end_)& end)
       : outer_iterator_{curr}, outer_begin_{begin}, outer_end_{end} {
-      FindValidEdgeForward();
+      FindValidEdgeForward(); // find the first valid edge
     };
 
     /*
-     * whenever we call this function, we are at the begin of curr level of edgeSet
+     * whenever we call this function, we are at the begin of the edgeSet(curr entity)
      * To: find a valid edge to return
-     * - if we cannot find one in the curr edgeSet, we will go to next level of edgeSet
+     * - if we cannot find one in the curr edgeSet, we will go to next edgeSet(forward direction)
+     * Algorithm:
+     *  //get ready for reach next edgeSet, if we cannot find a valid edge in this level
+     *  while(curr_outer != outer_end):
+     *    if (edgeSet == empty) continue;
+     *
+     *    while(inner_iterator != inner_end){
+     *      if the weak_ptr for this edgePair != null:
+     *        return
+     *      else:
+     *        continue
+     *   }
+     *
+     *   //if we are at outer_end, we still cannot find a valid edge
+     *   //set inner_iterator;
+     *   return
      */
     bool FindValidEdgeForward() {
       for (; outer_iterator_ != outer_end_; ++outer_iterator_) {
-        // find and set the first valid edge
         if (!outer_iterator_->second.empty()) {
           // check valid edge in this node? //since we might deleteNode
           for (inner_iterator_ = std::begin(outer_iterator_->second);
@@ -204,17 +225,15 @@ class Graph {
      * a valid edge to return (in the curr edgeSet)
      * - if cannot find one in this edgeSet, we go to previous level
      */
-
     bool FindValidEdgeBackward() {
       for (; outer_iterator_ != outer_begin_; --outer_iterator_) {
-        // find and set the first valid edge
         if (!outer_iterator_->second.empty()) {
           // check valid edge in this node? //since we might deleteNode
           if (findValidInEdgeSetBackward()) {
             return true;
           }
         }
-        // left outer.begin() to check, if we reach here
+        // we still have outer.begin() to check (if we reach here)
         // assign to last element of edge set,
         // now outer_iterator == begin
         if (!outer_iterator_->second.empty()) {
@@ -228,7 +247,7 @@ class Graph {
     }
 
 
-    /*
+    /* Assumption: we always call this function when the edgeSet is not empty
      * algorithm:
      *   assign to last element of this edge set
      *   for(!=begin):
@@ -260,12 +279,6 @@ class Graph {
       return false;
     }
 
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_iterator_;
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_begin_;
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_end_;
-    typename EdgeSet::iterator inner_iterator_;
-
-    friend class Graph;
   };  // end of iterator class
 
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
@@ -297,18 +310,18 @@ class Graph {
   bool erase(const N& src, const N& dst, const E& w);
   bool Replace(const N& oldData, const N& newData);
   void MergeReplace(const N&, const N&);
-//  const_iterator erase(const_iterator it);  // TODO: what's invalid iterator?
-//  const_iterator find(const N&, const N&, const E&);
+  const_iterator erase(const_iterator it);  // TODO: what's invalid iterator?
+  const_iterator find(const N&, const N&, const E&) const;
 
-  // iterator //TODO:const correctness ??
-  const_iterator cbegin();
-  const_iterator cend();
-  const_iterator begin() { return cbegin(); };
-  const_iterator end() { return cend(); };
-  const_reverse_iterator crbegin()  { return const_reverse_iterator{cend()}; }
-  const_reverse_iterator crend()  { return const_reverse_iterator{cbegin()}; }
-  const_reverse_iterator rbegin() { return crbegin(); }
-  const_reverse_iterator rend()  { return crend(); }
+  // iterator
+  const_iterator cbegin() const;
+  const_iterator cend() const;
+  const_iterator begin() const{ return cbegin(); };
+  const_iterator end() const{ return cend(); };
+  const_reverse_iterator crbegin() const{ return const_reverse_iterator{cend()}; }
+  const_reverse_iterator crend()  const{ return const_reverse_iterator{cbegin()}; }
+  const_reverse_iterator rbegin() const{ return crbegin(); }
+  const_reverse_iterator rend()  const{ return crend(); }
 
   /*
    * friends implementation
