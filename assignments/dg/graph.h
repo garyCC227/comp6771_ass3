@@ -113,7 +113,6 @@ class Graph {
      *      else: //still more entity to check
      *        --outer first, then find prev valid edge iterator, FinvaValidBackward()
      */
-
     const_iterator operator--() {
       // if begin == end all the time -> return segmentation fault
       if (outer_iterator_ == outer_end_) {
@@ -269,7 +268,6 @@ class Graph {
     friend class Graph;
   };  // end of iterator class
 
-
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   // constructor
@@ -298,7 +296,7 @@ class Graph {
   std::vector<E> GetWeights(const N& src, const N& dst);
   bool erase(const N& src, const N& dst, const E& w);
   bool Replace(const N& oldData, const N& newData);
-  void MergeReplace(const N& oldData, const N& newData);
+  void MergeReplace(const N&, const N&);
 //  const_iterator erase(const_iterator it);  // TODO: what's invalid iterator?
 //  const_iterator find(const N&, const N&, const E&);
 
@@ -332,7 +330,7 @@ class Graph {
       for (const auto& edge : node.second) {
         auto dst_ptr = edge.first.lock();
         if (dst_ptr) {
-          os << " "  << node.first->value << "--" << edge.second << "-->" <<dst_ptr->value << " ";
+          os << " " << edge.second << "-->" <<dst_ptr->value << " ";
         }
       }
 
