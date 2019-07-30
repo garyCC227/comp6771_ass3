@@ -23,6 +23,9 @@ template<typename EP>
 struct CompareByEdgePair {
   bool operator()(const EP& lhs, const EP& rhs) const {
     // comparator for EdgeSet -> compare Node value in each EdgePair
+    if (std::get<0>(lhs).lock()->value == std::get<0>(rhs).lock()->value) {
+      return std::get<1>(lhs) < std::get<1>(rhs);
+    }
     return (std::get<0>(lhs).lock()->value < std::get<0>(rhs).lock()->value);
   }
 };
