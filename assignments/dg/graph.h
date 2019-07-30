@@ -294,8 +294,10 @@ class Graph {
       // write edges
       for (const auto& edge : node.second) {
         auto dst_ptr = edge.first.lock();
-        if (dst_ptr) {
-          os << " " << edge.second << "-->" <<dst_ptr->value << " ";
+        if (!dst_ptr) {
+          os << " " << edge.second << "-->" << " =**= " << " ";
+        } else {
+          os << " " << edge.second << "-->" << dst_ptr->value << " ";
         }
       }
 

@@ -309,23 +309,25 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
   auto old_edgeSet = nodes_[old_ptr];
   auto new_edgeSet = nodes_[new_ptr];
   nodes_[new_ptr] = old_edgeSet;
+  // create a new set and append to old then change value
+  //  set a{};
 
   // remove entry_to_be_replaced TODO: check if old edges need tobe removed
-//  nodes_.erase(old_ptr);
-//  for (const auto& node : nodes_) {
-//    if (node.first->value == oldData) {
-//      node.first->value = newData;
-//      break;
-//    }
-//  }
+  nodes_.erase(new_ptr);
+  for (const auto& node : nodes_) {
+    if (node.first->value == oldData) {
+      node.first->value = newData;
+      break;
+    }
+  }
 //  auto nodeHandler = nodes_.extract(new_ptr);
 //  nodeHandler.key() = new_ptr;//std::make_unique<Node>("Z");
 //  nodes_.insert(std::move(nodeHandler));
-
-  for (const auto&  edge: new_edgeSet) {
-
-  }
-
+//
+//  for (const auto&  edge: new_edgeSet) {
+//
+//  }
+//
 
 //
   // iterate the map and change the share ptr to new
