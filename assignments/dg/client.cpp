@@ -86,12 +86,12 @@ int main() {
 //  // TODO: replace and merge replace
 
   gdwg::Graph<std::string, int> g;
-
   g.InsertNode("a");
   g.InsertNode("b");
   g.InsertNode("c");
-  g.InsertEdge("a", "c", 8);
-  g.InsertEdge("a", "b", 5);
+  g.InsertEdge("a", "b", 1);
+  g.InsertEdge("b", "c", 2);
+  g.InsertEdge("c", "a", 3);
   auto iter = g.crbegin();
   for(;iter!= g.crend(); ++iter) {
     std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight "
