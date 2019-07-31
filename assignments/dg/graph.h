@@ -30,7 +30,6 @@ struct CompareByEdgePair {
   }
 };
 
-// TODO: const correctness
 template<typename N, typename E>
 class Graph {
  private:
@@ -155,11 +154,12 @@ class Graph {
       --(*this);
       return copy;
     }
-    // TODO: compare too less field. FIX
+    // TODO: NULL graph compare iterator
     friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
       bool outer_equal = (lhs.outer_iterator_ == rhs.outer_iterator_);
       bool inner_equal = (lhs.inner_iterator_ == rhs.inner_iterator_);
-      return (outer_equal && inner_equal);
+      bool outer_at_end = (lhs.outer_iterator_ == lhs.outer_end_);
+      return (outer_equal && ( outer_at_end || inner_equal));
     }
 
     friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) {
@@ -295,15 +295,15 @@ class Graph {
   bool InsertEdge(const N& src, const N& dst, const E& w);
   bool IsNode(const N& val) const noexcept ;
   bool IsConnected(const N& src, const N& dst) const;
-  std::vector<N> GetNodes() noexcept;
+  std::vector<N> GetNodes() const noexcept;
   bool DeleteNode(const N&) noexcept;
   void Clear() noexcept ;
-  std::vector<N> GetConnected(const N& src);
-  std::vector<E> GetWeights(const N& src, const N& dst);
+  std::vector<N> GetConnected(const N& src) const;
+  std::vector<E> GetWeights(const N& src, const N& dst) const;
   bool erase(const N& src, const N& dst, const E& w) noexcept;
   bool Replace(const N& oldData, const N& newData);
   void MergeReplace(const N&, const N&);
-  const_iterator erase(const_iterator it) noexcept;  // TODO: what's invalid iterator?
+  const_iterator erase(const_iterator it) noexcept;
   const_iterator find(const N&, const N&, const E&) const noexcept;
 
 

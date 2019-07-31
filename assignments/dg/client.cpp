@@ -101,7 +101,6 @@ int main() {
 //  }
 //
 //  // TODO: replace and merge replace
-
   auto e3 = std::make_tuple("A", "B", 5);
   auto e4 = std::make_tuple("A", "C", 6);
   auto e5 = std::make_tuple("A", "D", 7);
@@ -119,7 +118,6 @@ int main() {
 //  g_mergeReplace.Replace("A", "Q");
   std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
 
-//  auto iter = g.begin();
 //  --iter;
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 
