@@ -280,18 +280,31 @@ bool gdwg::Graph<N, E>::Replace(const N& oldData, const N& newData) {
     throw std::runtime_error("Cannot call Graph::Replace on a node that doesn't exist");
   }
 
-  // if newdate already exist, return false
+  // if newdata already exist, return false
   if (IsNode(newData)) {
     return false;
   }
 
-  // just update the node->value to newData
-  for (const auto& node : nodes_) {
-    if (node.first->value == oldData) {
-      node.first->value = newData;
-      break;
+  auto old_ptr = std::make_shared<Node>(oldData);
+  auto new_ptr = std::make_shared<Node>(newData);
+
+  // iterate through the map to find oldData(need to be reaplce)
+  // and extract-insert to the newData
+  for (auto& entry : nodes_) {
+    for (auto& edge : entry.second) {
+      if (edge.first.lock()->value == oldData) {
+        // extract->change dest->insert back
+        auto edgeHandler = entry.second.extract(edge);
+        edgeHandler.value().first = new_ptr;
+        entry.second.insert(std::move(edgeHandler));
+      }
     }
   }
+  // extract->change keys to newData->insert the entry back
+  auto edgeSetHandler = nodes_.extract(old_ptr);
+  edgeSetHandler.key() = new_ptr;
+  nodes_.insert(std::move(edgeSetHandler));
+
 
   return true;
 }
@@ -302,55 +315,33 @@ template<typename N, typename E>
 void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
   if (!IsNode(oldData) || !IsNode(newData)) {
     throw std::runtime_error("Cannot call Graph::MergeReplace on old or new data if they don't "
-                             "exist in the graph");  // TODO: need to change to the actual value ???
+                             "exist in the graph");  // TODO: need to change to the actual value ???`
   }
 
   auto old_ptr = std::make_shared<Node>(oldData);
   auto new_ptr = std::make_shared<Node>(newData);
+  // copy of the edgeSet and append edges from new data to old
   auto new_edgeSet = nodes_[new_ptr];
-
   nodes_[old_ptr].insert(new_edgeSet.begin(), new_edgeSet.end());
 
-  nodes_.erase(new_ptr);
   auto src_entity = nodes_.find(old_ptr);
-  src_entity->first->value = newData;
 
-  for(const auto& node : nodes_) {
-    for(auto& edge : node.second) {
-      // find all removed edge and change ptr to A
-      if(!edge.first.lock()) {
-//        std::weak_ptr<Node> tmp = old_ptr;
-        edge.first = old_ptr;
+  // iterate through the map to find oldData(need to be reaplce)
+  // and extract-insert to the newData
+  for (auto& entry : nodes_) {
+    for (auto& edge : entry.second) {
+      if (edge.first.lock()->value == newData) {
+        // extract->change dest->insert back
+        auto edgeHandler = entry.second.extract(edge);
+        edgeHandler.value().first = src_entity->first;
+        entry.second.insert(std::move(edgeHandler));
       }
     }
   }
-//  auto nodeHandler = nodes_.extract(new_ptr);
-//  nodeHandler.key() = new_ptr;//std::make_unique<Node>("Z");
-//  nodes_.insert(std::move(nodeHandler));
-//
-//  for (const auto&  edge: new_edgeSet) {
-//
-//  }
-//
-
-//
-  // iterate the map and change the share ptr to new
-//  for (auto& entry : nodes_) {
-//    // bypass the old entry (delete later anyway)
-//    if (entry.first->value == oldData) continue;
-//    for (auto& edge : entry.second) {
-//      auto dst_ptr = edge.first.lock();
-//
-//      // need to change the ptr reference not just value
-//      if (dst_ptr->value == newData) {
-////        std::weak_ptr<Node> tmp = new_ptr;
-////        dst_ptr = new_ptr;
-////        edge.first = tmp;
-//
-////        std::cout << dst_ptr << " " << new_ptr << "\n";
-//      }
-//    }
-//  }
+  // remove to_be_replaced Entry
+  nodes_.erase(new_ptr);
+  // change to new value
+  src_entity->first->value = newData;
 }
 
 template <typename N, typename E>
@@ -375,7 +366,6 @@ gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& e) const{
     if(std::get<2>(*it) == e) return it;
   }
 
-  //reach here, -> we cannot find a valid edge
   return cend();
 }
 template<typename N, typename E>
