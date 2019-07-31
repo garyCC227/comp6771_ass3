@@ -48,10 +48,10 @@
  *  check TODO:
  */
 SCENARIO("Testing default constructor") {
-  GIVEN("We will initialized a vector by all the possible ways by using the default constructor") {
+  GIVEN("We will initialise a Graph in all the possible ways by using the default constructor") {
     WHEN("when `EuclidenVector vec` -> then dimension should be 1, magnitudes[0] is 0") {
-      EuclideanVector vec;
-      REQUIRE(vec.GetNumDimensions() == 1);
+      gdwg::Graph<int, int> g;
+      REQUIRE(g.GetNumDimensions() == 1);
       REQUIRE(vec[0] == 0);
     }
 
