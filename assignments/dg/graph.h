@@ -115,7 +115,6 @@ class Graph {
      */
 
     const_iterator operator--() {
-      // if begin == end all the time -> return segmentation fault
       if (outer_iterator_ == outer_end_) {
         --outer_iterator_; //--outer_iter, then call find FindValidEdgeBackward()
         FindValidEdgeBackward(); //so we are not at the outer_end
@@ -151,7 +150,7 @@ class Graph {
       --(*this);
       return copy;
     }
-    // TODO: compare too less field. FIX
+    // TODO: NULL graph compare iterator
     friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
       bool outer_equal = (lhs.outer_iterator_ == rhs.outer_iterator_);
       bool inner_equal = (lhs.inner_iterator_ == rhs.inner_iterator_);
@@ -163,18 +162,40 @@ class Graph {
     }
 
    private:
-    explicit const_iterator(
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator curr,
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator begin,
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator end)
+   typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_iterator_;
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_begin_;
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_end_;
+    typename EdgeSet::const_iterator inner_iterator_;
+    
+    friend class Graph;
+
+    const_iterator(
+        const decltype(outer_iterator_)& curr,
+        const decltype(outer_begin_)& begin,
+        const decltype(outer_end_)& end)
       : outer_iterator_{curr}, outer_begin_{begin}, outer_end_{end} {
-      FindValidEdgeForward();
+      FindValidEdgeForward(); // find the first valid edge
     };
 
     /*
-     * whenever we call this function, we are at the begin of curr level of edgeSet
+     * whenever we call this function, we are at the begin of the edgeSet(curr entity)
      * To: find a valid edge to return
-     * - if we cannot find one in the curr edgeSet, we will go to next level of edgeSet
+     * - if we cannot find one in the curr edgeSet, we will go to next edgeSet(forward direction)
+     * Algorithm:
+     *  //get ready for reach next edgeSet, if we cannot find a valid edge in this level
+     *  while(curr_outer != outer_end):
+     *    if (edgeSet == empty) continue;
+     *
+     *    while(inner_iterator != inner_end){
+     *      if the weak_ptr for this edgePair != null:
+     *        return
+     *      else:
+     *        continue
+     *   }
+     *
+     *   //if we are at outer_end, we still cannot find a valid edge
+     *   //set inner_iterator;
+     *   return
      */
     bool FindValidEdgeForward() {
       for (; outer_iterator_ != outer_end_; ++outer_iterator_) {
@@ -260,13 +281,6 @@ class Graph {
 
       return false;
     }
-
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_iterator_;
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_begin_;
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_end_;
-    typename EdgeSet::iterator inner_iterator_;
-
-    friend class Graph;
   };  // end of iterator class
 
 
