@@ -127,9 +127,9 @@ int main() {
 //
 ////  --iter;
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
-//  for(auto iter = g.crbegin(); iter != g.crend(); ++iter){
-//    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
-//  }
+  for(auto iter = g.crbegin(); iter != g.crend(); ++iter){
+    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+  }
 
 //  auto iter = g.crend();
 //  ++iter;
@@ -138,7 +138,6 @@ int main() {
 //      std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 
 //  --iter;
-  std::cout << (iter == g.crend()) << '\n';
 //  std::cout << (iter == g.end()) << '\n';
   // This is a structured binding.
   // https://en.cppreference.com/w/cpp/language/structured_binding

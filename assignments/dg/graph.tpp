@@ -352,7 +352,7 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  const{
 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const{
-  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.begin(), nodes_.end());
+  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
 }
 //
 template <typename N, typename E>
