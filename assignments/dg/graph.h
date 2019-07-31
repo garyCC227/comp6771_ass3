@@ -294,17 +294,17 @@ class Graph {
   bool InsertNode(const N& val) noexcept ;
   bool InsertEdge(const N& src, const N& dst, const E& w);
   bool IsNode(const N& val) const noexcept ;
-  bool IsConnected(const N& src, const N& dst);
+  bool IsConnected(const N& src, const N& dst) const;
   std::vector<N> GetNodes() noexcept;
   bool DeleteNode(const N&) noexcept;
   void Clear() noexcept ;
   std::vector<N> GetConnected(const N& src);
   std::vector<E> GetWeights(const N& src, const N& dst);
-  bool erase(const N& src, const N& dst, const E& w);
+  bool erase(const N& src, const N& dst, const E& w) noexcept;
   bool Replace(const N& oldData, const N& newData);
   void MergeReplace(const N&, const N&);
-  const_iterator erase(const_iterator it);  // TODO: what's invalid iterator?
-  const_iterator find(const N&, const N&, const E&) const;
+  const_iterator erase(const_iterator it) noexcept;  // TODO: what's invalid iterator?
+  const_iterator find(const N&, const N&, const E&) const noexcept;
 
 
   // iterator
@@ -320,15 +320,15 @@ class Graph {
   /*
    * friends implementation
    */
-  friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) {
+  friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
     return (lhs.nodes_ == rhs.nodes_);
   }
 
-  friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) {
+  friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
     return !(lhs.nodes_ == rhs.nodes_);
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g) {
+  friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g) noexcept {
 
     for (const auto& node : g.nodes_) {
       // write node value
