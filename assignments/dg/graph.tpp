@@ -80,7 +80,7 @@ bool gdwg::Graph<N, E>::InsertNode(const N& val) noexcept {
   if (!IsNode(val)) {
     auto curr = std::make_shared<Node>(val);
     nodes_[curr]; // initialize empty edge set
-  //    EdgeSet empty;
+  //    EdgeSet empty; //TODO
   //    nodes_[curr] = empty;
     return true;
   }
@@ -125,7 +125,7 @@ bool gdwg::Graph<N, E>::IsNode(const N& val) const noexcept{
 
 // true if edge betwee two nodes, false otherwise
 template<typename N, typename E>
-bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst){
+bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst) const{
   // check is Node existed?
   if (!IsNode(src) || !IsNode(dst)) {
     // TODO:check exception message: print "src or dst" |  "src" or "dst"
@@ -135,7 +135,8 @@ bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst){
 
   // get EdgeSet from the entity
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet& edges = nodes_[src_ptr]; 
+  auto it = nodes_.find(src_ptr);
+  auto& edges = it->second;
 
   auto predicate = [&dst](const EdgePair& edge) {
     auto dst_ptr = edge.first.lock();
@@ -195,7 +196,8 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
 
   std::vector<N> result;
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet edges = nodes_[src_ptr];
+  auto it = nodes_.find(src_ptr);
+  auto& edges = it->second;
 
   for (const auto& edge : edges) {
     auto edge_ptr = edge.first.lock();
@@ -215,7 +217,8 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) const{
   }
 
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet edges = nodes_[src_ptr];
+  auto it = nodes_.find(src_ptr);
+  auto& edges = it->second;
 
   std::vector<E> result;
   if (IsConnected(src, dst)) {
@@ -248,7 +251,8 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dst, const E& w) noexcept {
 
   // find the edge, and check the weight
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet edges = nodes_[src_ptr];
+  auto it = nodes_.find(src_ptr);
+  auto& edges = it->second;
 
   // predicate to check dst and weight
   auto predicate = [&dst, w](const EdgePair& edge) {

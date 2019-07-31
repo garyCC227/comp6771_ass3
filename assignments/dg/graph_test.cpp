@@ -81,18 +81,18 @@ SCENARIO("Testing cbegin()"){
     }
 
     WHEN("given a new graph with structure: a->b(1), a->c(2), b:{} , c:{}"){
-      std::string s10{"a"};
-      std::string s20{"b"};
-      std::string s30{"c"};
-      auto e10 = std::make_tuple(s1, s2, 1);
-      auto e20 = std::make_tuple(s1, s3, 2);
+      std::string str1{"a"};
+      std::string str2{"b"};
+      std::string str3{"c"};
+      auto e10 = std::make_tuple(str1, str2, 1);
+      auto e20 = std::make_tuple(str1, str3, 2);
       auto es = std::vector<std::tuple<std::string, std::string, double>>{e10, e20};
-      gdwg::Graph<std::string, double> g1{es.begin(), e.end()};
+      gdwg::Graph<std::string, double> temp_graph{es.begin(), es.end()};
       THEN("remove 'b' -> a->null, a->c(2), c:{} "){
-        g1.DeleteNode("b");
+        temp_graph.DeleteNode("b");
 
         AND_THEN("cbegin() should be a->c(2)"){
-          auto it = g.cbegin();
+          auto it = temp_graph.cbegin();
           REQUIRE(std::get<0>(*it) == "a");
           REQUIRE(std::get<1>(*it) == "c");
           REQUIRE(std::get<2>(*it) == 2);
@@ -100,11 +100,11 @@ SCENARIO("Testing cbegin()"){
       }
     }
 
-//    WHEN("empty graph"){
-//      g.Clear();
-//      THEN("cbegin() == cend()"){
-//        REQUIRE(g.begin() == g.cend());
-//      }
-//    }
+    WHEN("empty graph"){
+      g.Clear();
+      THEN("cbegin() == cend()"){
+        REQUIRE(g.begin() == g.cend());
+      }
+    }
   }
 }

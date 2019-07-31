@@ -294,7 +294,7 @@ class Graph {
   bool InsertNode(const N& val) noexcept ;
   bool InsertEdge(const N& src, const N& dst, const E& w);
   bool IsNode(const N& val) const noexcept ;
-  bool IsConnected(const N& src, const N& dst);
+  bool IsConnected(const N& src, const N& dst) const;
   std::vector<N> GetNodes() const noexcept;
   bool DeleteNode(const N&) noexcept;
   void Clear() noexcept ;
