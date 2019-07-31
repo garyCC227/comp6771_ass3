@@ -11,10 +11,14 @@ int main() {
   g.InsertNode("a");
   g.InsertNode("b");
   g.InsertNode("c");
-  g.InsertEdge("a", "b", 1);
-  g.InsertEdge("b", "c", 2);
-  g.InsertEdge("c", "a", 3);
-/*
+  g.InsertEdge("a", "c", 1);
+  g.InsertEdge("a", "c", 2);
+  auto iter = g.cend();
+  --iter;
+  --iter;
+  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+//  std::cout << g << '\n';
+  /*
   // ========================== test constructor/assignment ========================
   gdwg::Graph<std::string, int> g;
 
@@ -127,9 +131,9 @@ int main() {
 //
 ////  --iter;
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
-  for(auto iter = g.crbegin(); iter != g.crend(); ++iter){
-    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
-  }
+//  for(auto iter = g.crbegin(); iter != g.crend(); ++iter){
+//    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+//  }
 
 //  auto iter = g.crend();
 //  ++iter;

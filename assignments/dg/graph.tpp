@@ -1,8 +1,4 @@
-
-#include "assignments/dg/graph.h"
-
-#include <iostream>
-#include <algorithm>
+//dont include graph.h here
 
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
@@ -98,7 +94,9 @@ bool gdwg::Graph<N, E>::InsertEdge(const N& src, const N& dst, const E& w) {
   }
 
   // check already a edge exist
-  if (IsConnected(src, dst)) return false;
+  if(find(src, dst, w) != cend()){
+      return false;
+  }
 
   // insert edge
   auto src_ptr = std::make_shared<Node>(src);

@@ -67,10 +67,10 @@ class Graph {
     // prefix
     const_iterator operator++() {
       if (outer_iterator_ != outer_end_) {
-        if (std::distance(inner_iterator_, std::end(outer_iterator_->second)) > 1) {
+        if (std::distance(inner_iterator_, std::cend(outer_iterator_->second)) > 1) {
 
           std::advance(inner_iterator_, 1);
-          for (; inner_iterator_ != std::end(outer_iterator_->second); ++inner_iterator_) {
+          for (; inner_iterator_ != std::cend(outer_iterator_->second); ++inner_iterator_) {
             auto edge_ptr = inner_iterator_->first.lock();
             if (edge_ptr) {
               return *this;
@@ -123,9 +123,9 @@ class Graph {
         --outer_iterator_; //--outer_iter, then call find FindValidEdgeBackward()
         FindValidEdgeBackward(); //so we are not at the outer_end
       } else {
-        if (std::distance(inner_iterator_, std::begin(outer_iterator_->second)) > 0) {
+        if (std::distance(std::cbegin(outer_iterator_->second),inner_iterator_) > 0) {
           std::advance(inner_iterator_, -1);
-          for (; inner_iterator_ != std::begin(outer_iterator_->second); --inner_iterator_) {
+          for (; inner_iterator_ != std::cbegin(outer_iterator_->second); --inner_iterator_) {
             // stop here if we find a valid edge
             NodePtr ptr = inner_iterator_->first.lock();
             if (ptr) {
@@ -206,8 +206,8 @@ class Graph {
       for (; outer_iterator_ != outer_end_; ++outer_iterator_) {
         if (!outer_iterator_->second.empty()) {
           // check valid edge in this node? //since we might deleteNode
-          for (inner_iterator_ = std::begin(outer_iterator_->second);
-               inner_iterator_ != std::end(outer_iterator_->second); ++inner_iterator_) {
+          for (inner_iterator_ = std::cbegin(outer_iterator_->second);
+               inner_iterator_ != std::cend(outer_iterator_->second); ++inner_iterator_) {
             // stop here if we find a valid edge
             NodePtr ptr = inner_iterator_->first.lock();
             if (ptr) {
@@ -217,14 +217,14 @@ class Graph {
         }
         // if there is no valid edge, we will continue to next outer_iterator_
       }
-      inner_iterator_ = std::end(outer_iterator_->second);
+      inner_iterator_ = std::cend(outer_iterator_->second);
       return false;
     }
 
 
     /*
      * so we only have -- operator to call this function,
-     * and Assumption: whenever we call this function -> outer_iterator != outer_begin && outer_end
+     * and Assumption: whenever we call this function -> outer_iterator !=  outer_end
      * so function is used to:
      * -when we enter a new level of outer, we continuously to find
      * a valid edge to return (in the curr edgeSet)
@@ -247,6 +247,14 @@ class Graph {
           }
         }
       }
+      //we might call this function, when we reach outer_begin, after we --
+      if(outer_iterator_ == outer_begin_){
+        if(!outer_iterator_->second.empty()){
+          if (findValidInEdgeSetBackward()) {
+            return true;
+          }
+        }
+      }
       // reach here, mean cannot find a valid edge from the whole nodes_ map
       return false;
     }
@@ -254,9 +262,9 @@ class Graph {
 
     bool findValidInEdgeSetBackward() {
       // assign to last element of edge set
-      inner_iterator_ = std::end(outer_iterator_->second);
+      inner_iterator_ = std::cend(outer_iterator_->second);
       std::advance(inner_iterator_, -1);
-      for (; inner_iterator_ != std::begin(outer_iterator_->second); --inner_iterator_) {
+      for (; inner_iterator_ != std::cbegin(outer_iterator_->second); --inner_iterator_) {
         // stop here if we find a valid edge
         NodePtr ptr = inner_iterator_->first.lock();
         if (ptr) {
@@ -329,10 +337,10 @@ class Graph {
   }
 
   friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g) noexcept {
-
+    //TODO:change format back to the spec one
     for (const auto& node : g.nodes_) {
       // write node value
-      os << node.first->value << ": {";
+      os << node.first->value << ":(size:"<< node.second.size()<<"){";
       // write edges
       for (const auto& edge : node.second) {
         auto dst_ptr = edge.first.lock();
