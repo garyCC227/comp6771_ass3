@@ -252,7 +252,7 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dst, const E& w) noexcept {
   // find the edge, and check the weight
   NodePtr src_ptr = std::make_shared<Node>(src);
   auto it = nodes_.find(src_ptr);
-  auto& edges = it->second;
+  auto edges = it->second;
 
   // predicate to check dst and weight
   auto predicate = [&dst, w](const EdgePair& edge) {

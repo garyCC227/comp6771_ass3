@@ -7,6 +7,13 @@
 // Note: At the moment, there is no client.sampleout. Please do your own testing
 
 int main() {
+  gdwg::Graph<std::string, int> g;
+  g.InsertNode("a");
+  g.InsertNode("b");
+  g.InsertNode("c");
+  g.InsertEdge("a", "b", 1);
+  g.InsertEdge("b", "c", 2);
+  g.InsertEdge("c", "a", 3);
 /*
   // ========================== test constructor/assignment ========================
   gdwg::Graph<std::string, int> g;
@@ -100,27 +107,38 @@ int main() {
 //      std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 //  }
 //
-//  // TODO: replace and merge replace
-  auto e3 = std::make_tuple("A", "B", 5);
-  auto e4 = std::make_tuple("A", "C", 6);
-  auto e5 = std::make_tuple("A", "D", 7);
-  auto e6 = std::make_tuple("E", "C", 8);
-  auto e7 = std::make_tuple("Z", "E", 8);
-  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5, e6, e7};
-  gdwg::Graph<std::string, double> g_mergeReplace {v_tmp.begin(), v_tmp.end()};
-  g_mergeReplace.InsertEdge("C", "B", 10);
-  g_mergeReplace.InsertEdge("B", "D", 1);
-  g_mergeReplace.InsertEdge("D", "A", 10);
-  g_mergeReplace.InsertEdge("A", "A", 10);
-//  g_mergeReplace.InsertEdge("C", "Z", 10);
-  std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
-  g_mergeReplace.MergeReplace("A", "B");
-//  g_mergeReplace.Replace("A", "Q");
-  std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
+////  // TODO: replace and merge replace
+//  auto e3 = std::make_tuple("A", "B", 5);
+//  auto e4 = std::make_tuple("A", "C", 6);
+//  auto e5 = std::make_tuple("A", "D", 7);
+//  auto e6 = std::make_tuple("E", "C", 8);
+//  auto e7 = std::make_tuple("Z", "E", 8);
+//  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5, e6, e7};
+//  gdwg::Graph<std::string, double> g_mergeReplace {v_tmp.begin(), v_tmp.end()};
+//  g_mergeReplace.InsertEdge("C", "B", 10);
+//  g_mergeReplace.InsertEdge("B", "D", 1);
+//  g_mergeReplace.InsertEdge("D", "A", 10);
+//  g_mergeReplace.InsertEdge("A", "A", 10);
+////  g_mergeReplace.InsertEdge("C", "Z", 10);
+//  std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
+//  g_mergeReplace.MergeReplace("A", "B");
+////  g_mergeReplace.Replace("A", "Q");
+//  std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
+//
+////  --iter;
+//  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+//  for(auto iter = g.crbegin(); iter != g.crend(); ++iter){
+//    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+//  }
+
+//  auto iter = g.crend();
+//  ++iter;
+//  ++iter;
+//  ++iter;
+//      std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 
 //  --iter;
-//  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
-
+  std::cout << (iter == g.crend()) << '\n';
 //  std::cout << (iter == g.end()) << '\n';
   // This is a structured binding.
   // https://en.cppreference.com/w/cpp/language/structured_binding
