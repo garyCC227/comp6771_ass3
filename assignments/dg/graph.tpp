@@ -316,12 +316,12 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
 }
 
 template <typename N, typename E>
-typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  {
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  const{
   return gdwg::Graph<N, E>::const_iterator(nodes_.begin(), nodes_.begin(), nodes_.end());
 }
 
 template <typename N, typename E>
-typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() {
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const{
   return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
   // TODO:fix
 }

@@ -92,19 +92,18 @@ int main() {
   g.InsertNode("c");
   g.InsertEdge("a", "c", 8);
   g.InsertEdge("a", "b", 5);
-  auto iter = g.end();
-   ++iter;
-//  for(;iter != g.crend(); ++iter) {
-//    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight "
-//              << std::get<2>(*iter) << ")\n";
-//  }
+  auto iter = g.crbegin();
+  for(;iter!= g.crend(); ++iter) {
+    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight "
+              << std::get<2>(*iter) << ")\n";
+  }
 
-  std::cout << (iter == g.end()) << '\n';
+//  std::cout << (iter == g.end()) << '\n';
   // This is a structured binding.
   // https://en.cppreference.com/w/cpp/language/structured_binding
   // It allows you to unpack your tuple.
-  for (const auto& [from, to, weight] : g) {
-    std::cout << from << " -> " << to << " (weight " << weight << ")\n";
-  }
+//  for (const auto& [from, to, weight] : g) {
+//    std::cout << from << " -> " << to << " (weight " << weight << ")\n";
+//  }
 
 }

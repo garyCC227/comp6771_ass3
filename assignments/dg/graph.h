@@ -164,9 +164,9 @@ class Graph {
 
    private:
     explicit const_iterator(
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator curr,
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator begin,
-        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator end)
+        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator curr,
+        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator begin,
+        typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator end)
       : outer_iterator_{curr}, outer_begin_{begin}, outer_end_{end} {
       FindValidEdgeForward();
     };
@@ -261,9 +261,9 @@ class Graph {
       return false;
     }
 
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_iterator_;
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_begin_;
-    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::iterator outer_end_;
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_iterator_;
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_begin_;
+    typename std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>>::const_iterator outer_end_;
     typename EdgeSet::iterator inner_iterator_;
 
     friend class Graph;
@@ -303,14 +303,14 @@ class Graph {
 //  const_iterator find(const N&, const N&, const E&);
 
   // iterator //TODO:const correctness ??
-  const_iterator cbegin();
-  const_iterator cend();
-  const_iterator begin() { return cbegin(); };
-  const_iterator end() { return cend(); };
-  const_reverse_iterator crbegin()  { return const_reverse_iterator{cend()}; }
-  const_reverse_iterator crend()  { return const_reverse_iterator{cbegin()}; }
-  const_reverse_iterator rbegin() { return crbegin(); }
-  const_reverse_iterator rend()  { return crend(); }
+  const_iterator cbegin() const;
+  const_iterator cend() const;
+  const_iterator begin() const{ return cbegin(); };
+  const_iterator end() const{ return cend(); };
+  const_reverse_iterator crbegin()  const{ return const_reverse_iterator{cend()}; }
+  const_reverse_iterator crend()  const{ return const_reverse_iterator{cbegin()}; }
+  const_reverse_iterator rbegin() const { return crbegin(); }
+  const_reverse_iterator rend()  const{ return crend(); }
 
   /*
    * friends implementation
