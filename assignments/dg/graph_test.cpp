@@ -42,45 +42,69 @@
 #include "assignments/dg/graph.h"
 #include "catch.h"
 
+
 /*
- *  1. Test default constructor. How to test:
- *  after initialized the vector with default constructor,
- *  check TODO:
+ * 20. Test cbegin() function, How:
+ * 1. test the value of begin iterator for a normal graph
+ * 2. test the value of begin iterator after remove a node from a graph
+ * 3. test the value of begin iterator for a empty graph
  */
-SCENARIO("Testing default constructor") {
-  GIVEN("We will initialise a Graph in all the possible ways by using the default constructor") {
-    WHEN("when `EuclidenVector vec` -> then dimension should be 1, magnitudes[0] is 0") {
-      gdwg::Graph<int, int> g;
-      REQUIRE(g.GetNumDimensions() == 1);
-      REQUIRE(vec[0] == 0);
-    }
+SCENARIO("Testing cbegin()"){
+  GIVEN("Given a  graph with structure:a->b(1), b->c(2), c->a(3)"){
+    std::string s1{"a"};
+    std::string s2{"b"};
+    std::string s3{"c"};
+    auto e1 = std::make_tuple(s1, s2, 1);
+    auto e2 = std::make_tuple(s2, s3, 2);
+    auto e3 = std::make_tuple(s3, s1, 3);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
 
-    WHEN("when we initialized a 0-dimension vector -> dimension should be 0, throw for "
-         "maginitudes[0]") {
-      EuclideanVector vec{0};
-      REQUIRE(vec.GetNumDimensions() == 0);
-      // if index 0 is not valid, we can say the whole vector is empty
-      REQUIRE_THROWS_WITH(vec.at(0), "Index 0 is not valid for this EuclideanVector object");
-    }
-
-    WHEN("when initialized with some positive int, such d = 10 -> dimension = 10 and magnitudes "
-         "are all 0") {
-      EuclideanVector vec{10};
-      REQUIRE(vec.GetNumDimensions() == 10);
-      for (int i = 0; i < 10; ++i) {
-        REQUIRE(vec[i] == 0);
+    WHEN("using cbegin() for a normal graph"){
+      auto it  = g.cbegin();
+      THEN("we should get the expected value by this iterator"){
+        REQUIRE(std::get<0>(*it) == "a");
+        REQUIRE(std::get<1>(*it) == "b");
+        REQUIRE(std::get<2>(*it) == 1);
       }
     }
 
-    WHEN("when we initialized with some int type variable instead of numeric value, we should get "
-         "the same result") {
-      int d{5};
-      EuclideanVector vec{d};
+    WHEN("using cbegin() after a node in graph be removed, remove 'b'; begin is in next level of outer_iterator"){
+      g.DeleteNode("b"); // now graph is a->null, c->a(3)
 
-      REQUIRE(vec.GetNumDimensions() == 5);
-      for (int i = 0; i < 5; ++i) {
-        REQUIRE(vec[i] == 0);
+      THEN("we should get c->a(3)"){
+        auto it = g.cbegin();
+        REQUIRE(std::get<0>(*it) == "c");
+        REQUIRE(std::get<1>(*it) == "a");
+        REQUIRE(std::get<2>(*it) == 3);
       }
     }
+
+    WHEN("given a new graph with structure: a->b(1), a->c(2), b:{} , c:{}"){
+      std::string s10{"a"};
+      std::string s20{"b"};
+      std::string s30{"c"};
+      auto e10 = std::make_tuple(s1, s2, 1);
+      auto e20 = std::make_tuple(s1, s3, 2);
+      auto es = std::vector<std::tuple<std::string, std::string, double>>{e10, e20};
+      gdwg::Graph<std::string, double> g1{es.begin(), e.end()};
+      THEN("remove 'b' -> a->null, a->c(2), c:{} "){
+        g1.DeleteNode("b");
+
+        AND_THEN("cbegin() should be a->c(2)"){
+          auto it = g.cbegin();
+          REQUIRE(std::get<0>(*it) == "a");
+          REQUIRE(std::get<1>(*it) == "c");
+          REQUIRE(std::get<2>(*it) == 2);
+        }
+      }
+    }
+
+//    WHEN("empty graph"){
+//      g.Clear();
+//      THEN("cbegin() == cend()"){
+//        REQUIRE(g.begin() == g.cend());
+//      }
+//    }
   }
 }
