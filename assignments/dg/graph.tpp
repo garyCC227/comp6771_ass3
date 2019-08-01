@@ -369,6 +369,10 @@ gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& e) const noexcept {
 }
 template<typename N, typename E>
 typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg::Graph<N,E>::const_iterator it) noexcept {
+
+  //edge case -> if we pass a end() in, we will immediately return
+  if(it == cend()) return it;
+
   //for clean code, we using reference here
   const auto& src = std::get<0>(*it);
   const auto& dst = std::get<1>(*it);
@@ -382,10 +386,28 @@ typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg
     if(std::get<1>(*it) != dst) continue;
     //compare weight
     if(std::get<2>(*it) == e){
+      //store the all the value for next iterator position
+      ++it;
+
+      //if we ++ will reach the end, then we return end
+      if(it == cend()) {
+        erase(src, dst, e);
+        return (it);
+      }
+
+      //else we will get prepare to return a iterator point to next position
+      auto next_src = std::get<0>(*it);
+      auto next_dst = std::get<1>(*it);
+      auto next_e = std::get<2>(*it);
       //erase the edge by value
       erase(src, dst, e);
-      //return the iterator after the one we just removed
-      return (++it);
+
+      //create a new graph, and use that graph to create a new instance iterator
+      //then return that new instance iterator
+      decltype(*this) new_graph{*this};
+      auto next_it = new_graph.find(next_src, next_dst, next_e);
+
+      return (next_it);
     }
   }
 

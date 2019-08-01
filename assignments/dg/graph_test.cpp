@@ -103,9 +103,9 @@ SCENARIO("Testing cbegin()"){
     }
 
     WHEN("empty graph"){
-      g.Clear();
+      decltype(g) empty;
       THEN("cbegin() == cend()"){
-        REQUIRE(g.cbegin() == g.cend());
+        REQUIRE(empty.cbegin() == empty.cend());
       }
     }
   }
@@ -209,9 +209,9 @@ SCENARIO("Testing crbegin()"){
     }
 
     WHEN("empty graph"){
-      g.Clear();
+      decltype(g) empty;
       THEN("crbegin() == crend()"){
-        REQUIRE(g.crbegin() == g.crend());
+        REQUIRE(empty.crbegin() == empty.crend());
       }
     }
   }
@@ -333,11 +333,11 @@ SCENARIO("Test: const_iterator -> ++operator for const_iterator"){
 }
 
 /*
- * 24.Test: const_iterator ++operator()
+ * 25.Test: const_iterator --operator()
  *  1. loop through all , then compare the src and edge value
- *  2. test postfix operator++ working correct
+ *  2. test postfix operator-- working correct
  *  3. after remove someone node from a graph, loop through and compare
- *  4. test ++end() still == end()
+ *  4. test --begin() still == begin()
 
  */
 SCENARIO("Test: const_iterator -> --operator"){
@@ -391,7 +391,7 @@ SCENARIO("Test: const_iterator -> --operator"){
       g.erase("a", "b", 1);
       auto edges = std::vector<std::tuple<std::string, std::string, double>>{e2, e3};
       THEN("graph now is b->a(2), c->a(3)"){
-        auto edge = e.end();
+        auto edge = edges.end();
         auto it=g.cend();
         std::advance(it, -1);
         std::advance(edge, -1);
@@ -419,7 +419,7 @@ SCENARIO("Test: const_iterator -> --operator"){
 }
 
 /*
- * 25. test ++ and -- operator work properly
+ * 26. test ++ and -- operator work properly
  * 1. ++ and -- randomly
  * 2. test with erase edge
  * 3. test with erase node
@@ -523,5 +523,781 @@ SCENARIO("Test ++ and -- randomly, and ensure they work properly"){
         REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
       }
     }
+  }
+}
+
+/*
+ * 27.Test: const_reverse_iterator ++operator()
+ *  1. loop through all to compare the src and edge value
+ *  2. test postfix operator++ working correct
+ *  3. after remove someone node from a graph, loop through and compare
+ *  4. test ++end() still == end()
+
+ */
+SCENARIO("Test: const_reverse_iterator -> ++operator for const_reverse_iterator"){
+  GIVEN("given a graph:a->b(1), b->c(2), c->a(3)"){
+    std::string s1{"a"};
+    std::string s2{"b"};
+    std::string s3{"c"};
+    auto e1 = std::make_tuple(s1, s2, 1);
+    auto e2 = std::make_tuple(s2, s3, 2);
+    auto e3 = std::make_tuple(s3, s1, 3);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("we want to loop through the whole graph"){
+      THEN("the result should be the same"){
+        auto edge = e.crbegin();
+        for(auto it=g.crbegin(); it != g.crend(); ++it){
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          ++edge;
+        }
+      }
+    }
+
+    WHEN("testing postfix ++ operator"){
+      auto it = g.crbegin();
+      auto old = it++;
+      THEN("it now is b->c(2), and old should be c->a(3)"){
+        //check it
+        REQUIRE("b"== std::get<0>(*it));
+        REQUIRE("c" == std::get<1>(*it));
+        REQUIRE(2 == std::get<2>(*it));
+
+        //check old
+        REQUIRE("c"== std::get<0>(*old));
+        REQUIRE("a" == std::get<1>(*old));
+        REQUIRE( 3 == std::get<2>(*old));
+      }
+    }
+
+    WHEN("we want to loop through the whole graph after remove a node, remove a->b"){
+      g.erase("a", "b", 1);
+      auto edges = std::vector<std::tuple<std::string, std::string, double>>{e2, e3};
+      THEN("graph now is b->a(2), c->a(3)"){
+        auto edge = edges.crbegin();
+        for(auto it=g.crbegin(); it != g.crend(); ++it){
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          ++edge;
+        }
+      }
+    }
+
+    WHEN("++crend() is still end()"){
+      auto it = g.crend();
+      ++it;
+      THEN("++it == end()"){
+        REQUIRE(it == g.crend());
+      }
+    }
+
+  }
+}
+
+/*
+ * 28.Test: const_reverse_iterator --operator()
+ *  1. loop through all , then compare the src and edge value
+ *  2. test postfix operator-- working correct
+ *  3. after remove someone node from a graph, loop through and compare
+ *  4. test --crbegin() still == crbegin()
+
+ */
+SCENARIO("Test: const_reverse_iterator -> --operator"){
+  GIVEN("given a graph:a->b(1), b->c(2), c->a(3)"){
+    std::string s1{"a"};
+    std::string s2{"b"};
+    std::string s3{"c"};
+    auto e1 = std::make_tuple(s1, s2, 1);
+    auto e2 = std::make_tuple(s2, s3, 2);
+    auto e3 = std::make_tuple(s3, s1, 3);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("we want to loop through the whole graph"){
+      THEN("the result should be the same"){
+        auto edge = e.crend();
+        auto it=g.crend();
+        std::advance(it, -1);
+        std::advance(edge, -1);
+        for(; it != g.crbegin(); --it){ // compare from last element to begin-1
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          --edge;
+        }
+        //compare begin element
+        REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+        REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+        REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+      }
+    }
+
+    WHEN("testing postfix -- operator"){
+      auto it = g.crbegin();
+      ++it; // second position
+      auto old = it--;
+      THEN("it now is c->a(3), and old should be b->c(2)"){
+
+        REQUIRE("c"== std::get<0>(*it));
+        REQUIRE("a" == std::get<1>(*it));
+        REQUIRE(3 == std::get<2>(*it));
+
+        //check old
+        REQUIRE("b"== std::get<0>(*old));
+        REQUIRE("c" == std::get<1>(*old));
+        REQUIRE( 2 == std::get<2>(*old));
+      }
+    }
+
+    WHEN("we want to loop through the whole graph after remove a node, remove a->b"){
+      g.erase("a", "b", 1);
+      auto edges = std::vector<std::tuple<std::string, std::string, double>>{e2, e3};
+      THEN("graph now is b->a(2), c->a(3)"){
+        auto edge = edges.crend();
+        auto it=g.crend();
+        std::advance(it, -1);
+        std::advance(edge, -1);
+        for(; it != g.crbegin(); --it){ // compare from last element to begin-1
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          --edge;
+        }
+        //compare begin element
+        REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+        REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+        REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+      }
+    }
+
+    WHEN("--cbregin() is still crbegin()"){
+      auto it = g.crbegin();
+      --it;
+      THEN("--it == cbegin()"){
+        REQUIRE(it == g.crbegin());
+      }
+    }
+  }
+}
+
+
+/*
+ * 29. test ++ and -- operator work properly for const_reverse_iterator
+ * 1. ++ and -- randomly
+ * 2. test with erase edge
+ * 3. test with erase node
+ */
+SCENARIO("Test ++ and -- randomly, and ensure they work properly for const_reverse_iterator"){
+  GIVEN("given a normal graph with mutiple edges. check comment for structure"){
+    /*
+     * a: a->b(1), a->c(2), a->c(3), a->c(4)
+     * b: b->a(5), b->c(6)
+     * c: c->b(7), c->b(8)
+     */
+    std::string a{"a"};
+    std::string b{"b"};
+    std::string c{"c"};
+    auto e1 = std::make_tuple(a, b, 1);
+    auto e2 = std::make_tuple(a, c, 2);
+    auto e3 = std::make_tuple(a, c, 3);
+    auto e4 = std::make_tuple(a, c, 4);
+    auto e5 = std::make_tuple(b, a, 5);
+    auto e6 = std::make_tuple(b, c, 6);
+    auto e7 = std::make_tuple(c, b, 7);
+    auto e8 = std::make_tuple(c, b, 8);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3,e4,e5,e6,e7,e8};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("end--, then ++"){
+      auto it = g.crend();
+      --it;
+      THEN("it == a->b(1)"){
+        REQUIRE("a" == std::get<0>(*it));
+        REQUIRE("b" == std::get<1>(*it));
+        REQUIRE(1 == std::get<2>(*it));
+      }
+
+      AND_WHEN("++it"){
+        ++it;
+        THEN("it == crend()"){
+          REQUIRE(it == g.crend());
+        }
+      }
+    }
+
+    WHEN("loop through--"){
+      THEN("check expected value"){
+        auto edge = e.crend();
+        auto it=g.crend();
+        std::advance(it, -1);
+        std::advance(edge, -1);
+        for(; it != g.crbegin(); --it){ // compare from last element to begin-1
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          --edge;
+        }
+        //compare begin element
+        REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+        REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+        REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+      }
+    }
+
+    WHEN("we want to loop through the whole graph by ++"){
+      THEN("the result should be the same"){
+        auto edge = e.crbegin();
+        for(auto it=g.crbegin(); it != g.crend(); ++it){
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          ++edge;
+        }
+      }
+    }
+
+    AND_WHEN("remove 'c', now graph is a->b(1), b->a(5)"){
+      g.DeleteNode("c");
+      auto new_edges = std::vector<std::tuple<std::string, std::string, double>>{e1, e5};
+      THEN("loop through the whole graph by ++"){
+        auto edge = new_edges.crbegin();
+        for(auto it=g.crbegin(); it != g.crend(); ++it){
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          ++edge;
+        }
+      }
+
+      THEN("-- loop through"){
+        auto edge = new_edges.crend();
+        auto it=g.crend();
+        std::advance(it, -1);
+        std::advance(edge, -1);
+        for(; it != g.crbegin(); --it){ // compare from last element to begin-1
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          --edge;
+        }
+        //compare begin element
+        REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+        REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+        REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+      }
+    }
+  }
+}
+
+/*
+ * 30. Testing == operator
+ * 1. for const_iterator
+ * 2. for const_reverse_iterator
+ */
+SCENARIO("Testing == operator"){
+ GIVEN("given a graph with structure(check comments)"){
+   /*
+     * a: a->b(1), a->c(2), a->c(3), a->c(4)
+     * b: b->a(5), b->c(6)
+     * c: c->b(7), c->b(8)
+     */
+    std::string a{"a"};
+    std::string b{"b"};
+    std::string c{"c"};
+    auto e1 = std::make_tuple(a, b, 1);
+    auto e2 = std::make_tuple(a, c, 2);
+    auto e3 = std::make_tuple(a, c, 3);
+    auto e4 = std::make_tuple(a, c, 4);
+    auto e5 = std::make_tuple(b, a, 5);
+    auto e6 = std::make_tuple(b, c, 6);
+    auto e7 = std::make_tuple(c, b, 7);
+    auto e8 = std::make_tuple(c, b, 8);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3,e4,e5,e6,e7,e8};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("using const_iterator and loop through to compare with begin()"){
+      auto begin = g.cbegin();
+      int i = 0;
+      THEN("only the first one == begin(), others all !(it == begin())")
+      for(auto it = g.cbegin(); it != g.cend();++it){
+        if(i == 0){
+          REQUIRE(begin == it);
+        }else{
+          REQUIRE(!(begin == it));
+        }
+        ++i;
+      }
+    }
+
+    WHEN("using const_reverse_iterator and loop through to compare with rbegin()"){
+      auto rbegin = g.crbegin();
+      int i = 0;
+      THEN("only the first one == rbegin(), others all !(it == rbegin())")
+      for(auto it = g.crbegin(); it != g.crend();++it){
+        if(i == 0){
+          REQUIRE(rbegin == it);
+        }else{
+          REQUIRE(!(rbegin == it));
+        }
+        ++i;
+      }
+    }
+ }
+}
+
+/*
+ * 31. Testing != operator
+ * 1. for const_iterator
+ * 2. for const_reverse_iterator
+ */
+SCENARIO("Testing != operator"){
+ GIVEN("given a graph with structure(check comments)"){
+   /*
+     * a: a->b(1), a->c(2), a->c(3), a->c(4)
+     * b: b->a(5), b->c(6)
+     * c: c->b(7), c->b(8)
+     */
+    std::string a{"a"};
+    std::string b{"b"};
+    std::string c{"c"};
+    auto e1 = std::make_tuple(a, b, 1);
+    auto e2 = std::make_tuple(a, c, 2);
+    auto e3 = std::make_tuple(a, c, 3);
+    auto e4 = std::make_tuple(a, c, 4);
+    auto e5 = std::make_tuple(b, a, 5);
+    auto e6 = std::make_tuple(b, c, 6);
+    auto e7 = std::make_tuple(c, b, 7);
+    auto e8 = std::make_tuple(c, b, 8);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3,e4,e5,e6,e7,e8};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("using const_iterator and loop through to compare with begin()"){
+      auto begin = g.cbegin();
+      int i = 0;
+      THEN("only !(first one != begin()), others all (it != begin())")
+      for(auto it = g.cbegin(); it != g.cend();++it){
+        if(i == 0){
+          REQUIRE(!(begin != it));
+        }else{
+          REQUIRE(begin != it);
+        }
+        ++i;
+      }
+    }
+
+    WHEN("using const_reverse_iterator and loop through to compare with rbegin()"){
+      auto rbegin = g.crbegin();
+      int i = 0;
+      THEN("only  !(first one != begin()), others all (it != begin())")
+      for(auto it = g.crbegin(); it != g.crend();++it){
+        if(i == 0){
+          REQUIRE( !(rbegin != it) );
+        }else{
+          REQUIRE(rbegin != it);
+        }
+        ++i;
+      }
+    }
+ }
+}
+
+
+/*
+ * 32. test const_iterator find()
+ * with a complex graph structure
+ * 1. find the element at very first
+ * 2. find the element at middle of first level edgeSet
+ * 3. find the element at the last of first level edgeSet
+ * 4. find the element at the begin of second level edgeSet
+ * 5. find the element at the end of second level edge set
+ * 6. find the element at the begin of last level of edgeSet
+ * 7. find the element at the very very last
+ * 8. cannot find the element will return cend()
+ */
+SCENARIO("Testing find()"){
+  GIVEN("give a complex graph with structure(check comments)"){
+    /*
+     * a: a->b(1), a->c(2), a->c(3), a->c(4)
+     * b: b->a(5), b->c(6)
+     * c: c->b(7), c->b(8)
+     */
+    std::string a{"a"};
+    std::string b{"b"};
+    std::string c{"c"};
+    auto e1 = std::make_tuple(a, b, 1);
+    auto e2 = std::make_tuple(a, c, 2);
+    auto e3 = std::make_tuple(a, c, 3);
+    auto e4 = std::make_tuple(a, c, 4);
+    auto e5 = std::make_tuple(b, a, 5);
+    auto e6 = std::make_tuple(b, c, 6);
+    auto e7 = std::make_tuple(c, b, 7);
+    auto e8 = std::make_tuple(c, b, 8);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3,e4,e5,e6,e7,e8};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("1. find a->b(1) "){
+      auto found = g.find(a, b, 1);
+      THEN("check the value of found iterator"){
+        REQUIRE("a"== std::get<0>(*found));
+        REQUIRE("b" == std::get<1>(*found));
+        REQUIRE(1 == std::get<2>(*found));
+      }
+    }
+
+    WHEN("2. find a->c(2) "){
+      auto found = g.find(a, c, 2);
+      THEN("check the value of found iterator"){
+        REQUIRE("a"== std::get<0>(*found));
+        REQUIRE("c" == std::get<1>(*found));
+        REQUIRE(2 == std::get<2>(*found));
+      }
+    }
+
+    WHEN("3. find a->c(4) "){
+      auto found = g.find(a, c, 4);
+      THEN("check the value of found iterator"){
+        REQUIRE("a"== std::get<0>(*found));
+        REQUIRE("c" == std::get<1>(*found));
+        REQUIRE(4 == std::get<2>(*found));
+      }
+    }
+    WHEN("4. find b->a(5) "){
+      auto found = g.find(b, a, 5);
+      THEN("check the value of found iterator"){
+        REQUIRE("b"== std::get<0>(*found));
+        REQUIRE("a" == std::get<1>(*found));
+        REQUIRE(5 == std::get<2>(*found));
+      }
+    }
+    WHEN("5. find b->c(6) "){
+      auto found = g.find(b, c, 6);
+      THEN("check the value of found iterator"){
+        REQUIRE("b"== std::get<0>(*found));
+        REQUIRE("c" == std::get<1>(*found));
+        REQUIRE(6 == std::get<2>(*found));
+      }
+    }
+
+    WHEN("6. find c->b(7) "){
+      auto found = g.find(c, b, 7);
+      THEN("check the value of found iterator"){
+        REQUIRE("c"== std::get<0>(*found));
+        REQUIRE("b" == std::get<1>(*found));
+        REQUIRE(7 == std::get<2>(*found));
+      }
+    }
+    WHEN("7. find c->b(8) "){
+      auto found = g.find(c, b, 8);
+      THEN("check the value of found iterator"){
+        REQUIRE("c"== std::get<0>(*found));
+        REQUIRE("b" == std::get<1>(*found));
+        REQUIRE(8 == std::get<2>(*found));
+      }
+    }
+
+    WHEN("8. cannot find a edge "){
+      auto found = g.find(b, c, 100);
+      THEN("return cend()"){
+        REQUIRE(found == g.cend());
+      }
+    }
+  }
+}
+
+/*
+ * 33. Test: const_iterator erase() -> all check its next element
+ *  1. erase the element at very first
+ * 2. erase the element at middle of first level edgeSet
+ * 3. erase the element at the last of first level edgeSet
+ * 4. erase the element at the begin of second level edgeSet
+ * 5. erase the element at the end of second level edge set
+ * 6. erase the element at the begin of last level of edgeSet
+ * 7. erase the element at the very very last
+ * 8. the element that cannot find to erase ->  will return cend()
+ * 9. check after erase, -- and ++ run through that iterator_pos -> work properly
+ */
+SCENARIO("Testing erase()"){
+  GIVEN("give a complex graph with structure(check comments) for each test case"){
+    /*
+       * a: a->b(1), a->c(2), a->c(3), a->c(4)
+       * b: b->a(5), b->c(6)
+       * c: c->b(7), c->b(8)
+       */
+      std::string a{"a"};
+      std::string b{"b"};
+      std::string c{"c"};
+      auto e1 = std::make_tuple(a, b, 1);
+      auto e2 = std::make_tuple(a, c, 2);
+      auto e3 = std::make_tuple(a, c, 3);
+      auto e4 = std::make_tuple(a, c, 4);
+      auto e5 = std::make_tuple(b, a, 5);
+      auto e6 = std::make_tuple(b, c, 6);
+      auto e7 = std::make_tuple(c, b, 7);
+      auto e8 = std::make_tuple(c, b, 8);
+      auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3,e4,e5,e6,e7,e8};
+      gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("1. erase a->b(1) "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(a, b, 1);
+      auto next = copy_g.erase(found);
+      THEN("then we cannot find a->b(1) anymore, and erase return a->c(2)"){
+        //check next element
+        REQUIRE("a"== std::get<0>(*next));
+        REQUIRE("c" == std::get<1>(*next));
+        REQUIRE(2 == std::get<2>(*next));
+
+        REQUIRE(copy_g.find(a,b,1) == copy_g.cend());
+      }
+    }
+
+    WHEN("2. erase a->c(2) "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(a, c, 2);
+      auto next = copy_g.erase(found);
+      THEN("then we cannot find a->c(2) anymore, and erase return a->c(3)"){
+        //check next element
+        REQUIRE("a"== std::get<0>(*next));
+        REQUIRE("c" == std::get<1>(*next));
+        REQUIRE(3 == std::get<2>(*next));
+        REQUIRE(copy_g.find(a,c,2) == copy_g.cend());
+      }
+    }
+
+    WHEN("3. erase a->c(4) "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(a, c, 4);
+      auto next = copy_g.erase(found);
+      THEN("then we cannot find a->c(4) anymore, and erase return b->a(5)"){
+        //check next element
+        REQUIRE("b"== std::get<0>(*next));
+        REQUIRE("a" == std::get<1>(*next));
+        REQUIRE(5 == std::get<2>(*next));
+        REQUIRE(copy_g.find(a,c,4) == copy_g.cend());
+      }
+    }
+
+    WHEN("4. erase b->a(5) "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(b, a, 5);
+      auto next = copy_g.erase(found);
+      THEN("then we cannot find b->a(5) anymore,and erase return b->c(6) "){
+        //check next element
+        REQUIRE("b"== std::get<0>(*next));
+        REQUIRE("c" == std::get<1>(*next));
+        REQUIRE(6 == std::get<2>(*next));
+        REQUIRE(copy_g.find(b,a,5) == copy_g.cend());
+      }
+    }
+
+    WHEN("5. erase b->c(6) "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(b, c, 6);
+      auto next = copy_g.erase(found);
+      THEN("then we cannot find b->c(6) anymore,and erase return c->b(7) "){
+        //check next element
+        REQUIRE("c"== std::get<0>(*next));
+        REQUIRE("b" == std::get<1>(*next));
+        REQUIRE(7 == std::get<2>(*next));
+        REQUIRE(copy_g.find(b,c,6) == copy_g.cend());
+      }
+    }
+
+    WHEN("6. erase c->b(7) "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(c, b, 7);
+      auto next = copy_g.erase(found);
+      THEN("then we cannot find c->b(7) anymore, and erase return c->b(8)"){
+        //check next element
+        REQUIRE("c"== std::get<0>(*next));
+        REQUIRE("b" == std::get<1>(*next));
+        REQUIRE(8 == std::get<2>(*next));
+        REQUIRE(copy_g.find(c,b,7) == copy_g.cend());
+      }
+    }
+
+    WHEN("7. erase c->b(8) "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(c, b, 8);
+      auto next = copy_g.erase(found);
+      THEN("then we cannot find c->b(8) anymore, and erase return cend()"){
+        REQUIRE(next == copy_g.cend());
+        REQUIRE(copy_g.find(c,b,8) == copy_g.cend());
+      }
+    }
+    WHEN("8. cannot find one to erase "){
+      decltype(g) copy_g{g};
+      auto found = copy_g.cend();
+      auto result = copy_g.erase(found);
+      THEN("we will return cend()"){
+        REQUIRE(result == copy_g.cend());
+      }
+    }
+
+    WHEN("check after erase with -- and ++ through that position"){
+      decltype(g) copy_g{g};
+      auto found = copy_g.find(a,c,2);
+      auto result = copy_g.erase(found);
+      THEN("--result should be a->b(1)"){
+        --result;
+        REQUIRE("a"== std::get<0>(*result));
+        REQUIRE("b" == std::get<1>(*result));
+        REQUIRE(1 == std::get<2>(*result));
+
+        AND_THEN("++result will be a->c(3)"){
+          ++result;
+          REQUIRE("a"== std::get<0>(*result));
+          REQUIRE("c" == std::get<1>(*result));
+          REQUIRE(3 == std::get<2>(*result));
+        }
+      }
+    }
+  }
+}
+
+/*
+ *  34. Test: const object with iterator
+ *  --- 9 to 10 will do const_iterator and const_reverse_iterator together
+ *  9. ++ look through whole graph
+ *  10. -- look through whole graph
+ *  11. find
+ *  12. ==
+ *  13. !=
+ *  -----
+ *  1.have cbegin() to call
+ *  2.have cend()
+ *  3. have begin()
+ *  4. have end()
+ *  5.have crbegin()
+ *  6.have crend()
+ *  7. have rbegin()
+ *  8. have rend()
+ *
+ */
+SCENARIO("Test const graph with iterator"){
+  GIVEN("given a const graph "){
+    /*
+       * a: a->b(1), a->c(2), a->c(3), a->c(4)
+       * b: b->a(5), b->c(6)
+       * c: c->b(7), c->b(8)
+       */
+      std::string a{"a"};
+      std::string b{"b"};
+      std::string c{"c"};
+      auto e1 = std::make_tuple(a, b, 1);
+      auto e2 = std::make_tuple(a, c, 2);
+      auto e3 = std::make_tuple(a, c, 3);
+      auto e4 = std::make_tuple(a, c, 4);
+      auto e5 = std::make_tuple(b, a, 5);
+      auto e6 = std::make_tuple(b, c, 6);
+      auto e7 = std::make_tuple(c, b, 7);
+      auto e8 = std::make_tuple(c, b, 8);
+      auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3,e4,e5,e6,e7,e8};
+      const gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+
+      WHEN("test case from 1-8. ensure const graph have these iterator function to call"){
+        THEN("they should all work properly"){
+          REQUIRE_NOTHROW(g.cbegin());
+          REQUIRE_NOTHROW(g.cend());
+          REQUIRE_NOTHROW(g.begin());
+          REQUIRE_NOTHROW(g.end());
+          REQUIRE_NOTHROW(g.crbegin());
+          REQUIRE_NOTHROW(g.crend());
+          REQUIRE_NOTHROW(g.rbegin());
+          REQUIRE_NOTHROW(g.rend());
+        }
+      }
+
+      WHEN("9. use ++ to look through for const_iterator"){
+        THEN("we should get whatever the value we expected"){
+          auto edge = e.cbegin();
+          for(auto it=g.cbegin(); it != g.cend(); ++it){
+            REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+            REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+            REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+            ++edge;
+          }
+        }
+
+        AND_WHEN("++ look through by const_reverse_iterator"){
+          THEN("we still get the expected value"){
+            auto edge = e.crbegin();
+            for(auto it=g.crbegin(); it != g.crend(); ++it){
+              REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+              REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+              REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+              ++edge;
+            }
+          }
+        }
+      }
+
+      WHEN("10. loop through-- by const_iterator"){
+        THEN("check expected value"){
+          auto edge = e.cend();
+          auto it=g.cend();
+          std::advance(it, -1);
+          std::advance(edge, -1);
+          for(; it != g.cbegin(); --it){ // compare from last element to begin-1
+            REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+            REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+            REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+            --edge;
+          }
+          //compare begin element
+          REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+          REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+          REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+        }
+
+        AND_WHEN("loop through-- by const_reverse_iterator"){
+          THEN("check expected value"){
+            auto edge = e.crend();
+            auto it=g.crend();
+            std::advance(it, -1);
+            std::advance(edge, -1);
+            for(; it != g.crbegin(); --it){ // compare from last element to begin-1
+              REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+              REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+              REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+              --edge;
+            }
+            //compare begin element
+            REQUIRE(std::get<0>(*edge) == std::get<0>(*it));
+            REQUIRE(std::get<1>(*edge) == std::get<1>(*it));
+            REQUIRE(std::get<2>(*edge) == std::get<2>(*it));
+          }
+        }
+      }
+
+      WHEN("11. const obeject call find()"){
+        THEN("work properly"){
+          REQUIRE_NOTHROW(g.find(a, b, 1));
+        }
+      }
+
+      WHEN("12. const obeject call == operator for const_iterator and const_reverse_iterator"){
+        THEN("work properly"){
+          REQUIRE_NOTHROW(g.cbegin() == g.cbegin());
+          REQUIRE_NOTHROW(g.crbegin() == g.crbegin());
+          REQUIRE_NOTHROW(g.cend() == g.cend());
+          REQUIRE_NOTHROW(g.crend() == g.crend());
+        }
+      }
+
+      WHEN("13. const obeject call != operator for const_iterator and const_reverse_iterator"){
+        THEN("work properly"){
+          REQUIRE_NOTHROW(g.cend() != g.cbegin());
+          REQUIRE_NOTHROW(g.crend() != g.crbegin());
+          REQUIRE_NOTHROW(g.cbegin() != g.cend());
+          REQUIRE_NOTHROW(g.crbegin() != g.crend());
+        }
+      }
+
   }
 }
