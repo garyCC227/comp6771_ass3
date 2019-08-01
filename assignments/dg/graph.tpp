@@ -1,5 +1,5 @@
 //dont include graph.h here
-
+//TODO: after merge, put all the comment in .h and .tpp
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
