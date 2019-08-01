@@ -90,7 +90,7 @@ bool gdwg::Graph<N, E>::InsertEdge(const N& src, const N& dst, const E& w) {
   if (!IsNode(src) || !IsNode(dst)) {
     // TODO:check exception message: print "src or dst" |  "src" or "dst"
     throw std::runtime_error(
-        "Cannot call Graph::IsConnected if src or dst node don't exist in the graph");
+        "Cannot call Graph::InsertEdge when either src or dst node does not exist");
   }
 
   // check already a edge exist
