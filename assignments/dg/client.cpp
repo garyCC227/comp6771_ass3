@@ -7,7 +7,18 @@
 // Note: At the moment, there is no client.sampleout. Please do your own testing
 
 int main() {
-/*
+//  gdwg::Graph<std::string, int> g;
+//  g.InsertNode("a");
+//  g.InsertNode("b");
+//  g.InsertNode("c");
+//  g.InsertEdge("a", "c", 1);
+//  g.InsertEdge("a", "c", 2);
+//  auto iter = g.cend();
+//  --iter;
+//  --iter;
+//  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+//  std::cout << g << '\n';
+  /*
   // ========================== test constructor/assignment ========================
   gdwg::Graph<std::string, int> g;
 
@@ -100,7 +111,7 @@ int main() {
 //      std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 //  }
 //
-//  // TODO: replace and merge replace
+  // TODO: replace and merge replace
   auto e3 = std::make_tuple("A", "B", 5);
   auto e4 = std::make_tuple("A", "C", 6);
   auto e5 = std::make_tuple("A", "D", 7);
@@ -119,9 +130,18 @@ int main() {
   std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
 
 
-//  --iter;
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+//  for(auto iter = g.crbegin(); iter != g.crend(); ++iter){
+//    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+//  }
 
+//  auto iter = g.crend();
+//  ++iter;
+//  ++iter;
+//  ++iter;
+//      std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+
+//  --iter;
 //  std::cout << (iter == g.end()) << '\n';
   // This is a structured binding.
   // https://en.cppreference.com/w/cpp/language/structured_binding

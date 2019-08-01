@@ -1,9 +1,10 @@
-
 #include "assignments/dg/graph.h"
 
 #include <iostream>
 #include <algorithm>
 
+//dont include graph.h here
+//TODO: after merge, put all the comment in .h and .tpp
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
@@ -80,7 +81,7 @@ bool gdwg::Graph<N, E>::InsertNode(const N& val) noexcept {
   if (!IsNode(val)) {
     auto curr = std::make_shared<Node>(val);
     nodes_[curr]; // initialize empty edge set
-  //    EdgeSet empty;
+  //    EdgeSet empty; //TODO
   //    nodes_[curr] = empty;
     return true;
   }
@@ -94,11 +95,13 @@ bool gdwg::Graph<N, E>::InsertEdge(const N& src, const N& dst, const E& w) {
   if (!IsNode(src) || !IsNode(dst)) {
     // TODO:check exception message: print "src or dst" |  "src" or "dst"
     throw std::runtime_error(
-        "Cannot call Graph::IsConnected if src or dst node don't exist in the graph");
+        "Cannot call Graph::InsertEdge when either src or dst node does not exist");
   }
 
   // check already a edge exist
-  if (IsConnected(src, dst)) return false;
+  if(find(src, dst, w) != cend()){
+      return false;
+  }
 
   // insert edge
   auto src_ptr = std::make_shared<Node>(src);
@@ -135,7 +138,8 @@ bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst) const{
 
   // get EdgeSet from the entity
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet edges = nodes_[src_ptr];
+  auto it = nodes_.find(src_ptr);
+  auto& edges = it->second;
 
   auto predicate = [&dst](const EdgePair& edge) {
     auto dst_ptr = edge.first.lock();
@@ -169,12 +173,22 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& val) noexcept{
   if (!IsNode(val))
     return false;
 
-  for (auto begin = nodes_.begin(); begin != nodes_.end(); ++begin) {
-    if (begin->first->value == val) {
-      nodes_.erase(begin);
-      break;
+  // make ptr to the value to be revmoed
+  auto old_ptr = std::make_shared<Node>(val);
+
+  // iterate through the map to find oldData(need to be reaplce)
+  // and extract-insert to the newData
+  for (auto& entry : nodes_) {
+    if (entry.first->value == val) continue;
+    for (auto& edge : entry.second) {
+      if (edge.first.lock()->value == val) {
+        // remove edges
+        entry.second.extract(edge);
+      }
     }
   }
+  // remove the entry from the map
+  nodes_.extract(old_ptr);
 
   return true;
 }
@@ -195,7 +209,8 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
 
   std::vector<N> result;
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet edges = nodes_[src_ptr];
+  auto it = nodes_.find(src_ptr);
+  auto& edges = it->second;
 
   for (const auto& edge : edges) {
     auto edge_ptr = edge.first.lock();
@@ -215,7 +230,8 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) const{
   }
 
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet edges = nodes_[src_ptr];
+  auto it = nodes_.find(src_ptr);
+  auto& edges = it->second;
 
   std::vector<E> result;
   if (IsConnected(src, dst)) {
@@ -248,7 +264,8 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dst, const E& w) noexcept {
 
   // find the edge, and check the weight
   NodePtr src_ptr = std::make_shared<Node>(src);
-  EdgeSet edges = nodes_[src_ptr];
+  auto it = nodes_.find(src_ptr);
+  auto edges = it->second;
 
   // predicate to check dst and weight
   auto predicate = [&dst, w](const EdgePair& edge) {
@@ -348,7 +365,7 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin()  const{
 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const{
-  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.begin(), nodes_.end());
+  return gdwg::Graph<N, E>::const_iterator(nodes_.end(), nodes_.end(), nodes_.end());
 }
 //
 template <typename N, typename E>
@@ -367,6 +384,10 @@ gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& e) const noexcept {
 }
 template<typename N, typename E>
 typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg::Graph<N,E>::const_iterator it) noexcept {
+
+  //edge case -> if we pass a end() in, we will immediately return
+  if(it == cend()) return it;
+
   //for clean code, we using reference here
   const auto& src = std::get<0>(*it);
   const auto& dst = std::get<1>(*it);
@@ -380,10 +401,28 @@ typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg
     if(std::get<1>(*it) != dst) continue;
     //compare weight
     if(std::get<2>(*it) == e){
+      //store the all the value for next iterator position
+      ++it;
+
+      //if we ++ will reach the end, then we return end
+      if(it == cend()) {
+        erase(src, dst, e);
+        return (it);
+      }
+
+      //else we will get prepare to return a iterator point to next position
+      auto next_src = std::get<0>(*it);
+      auto next_dst = std::get<1>(*it);
+      auto next_e = std::get<2>(*it);
       //erase the edge by value
       erase(src, dst, e);
-      //return the iterator after the one we just removed
-      return (++it);
+
+      //create a new graph, and use that graph to create a new instance iterator
+      //then return that new instance iterator
+      decltype(*this) new_graph{*this};
+      auto next_it = new_graph.find(next_src, next_dst, next_e);
+
+      return (next_it);
     }
   }
 
