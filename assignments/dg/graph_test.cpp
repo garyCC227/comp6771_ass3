@@ -1150,7 +1150,7 @@ SCENARIO("Replace and MergeReplace nodes in graph") {
 
 /*
  *  6. Test friend.
- *  How to test:
+ *  How to test: since == and != use same interpretations, we can test simultaneously
  *              1. == and !=
  *
  *  method: == !=
@@ -1165,17 +1165,70 @@ SCENARIO("Testing friend funciton") {
     auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2};
     gdwg::Graph<std::string, double> g{e.begin(), e.end()};
 
-    THEN("We copy this garph") {
+    THEN("We compare thecopied graph") {
       gdwg::Graph<std::string, double> g_copy{g};
       THEN("These two graphs should be equal") {
         REQUIRE(g == g_copy);
+        REQUIRE(!(g != g_copy));
       }
     }
 
-    THEN("compare auto empty graph") {
+    THEN("compare a empty graph") {
       gdwg::Graph<std::string, double> g_empty;
-      THEN("These two graphs should be equal") {
+      THEN("These two graphs should not be equal") {
         REQUIRE(g != g_empty);
+        REQUIRE(!(g == g_empty));
+      }
+    }
+
+    THEN("compare graph with same nodes but no edges") {
+      gdwg::Graph<std::string, double> g_1{"A", "B", "C"};
+      THEN("These two graphs should not be equal") {
+        REQUIRE(g != g_1);
+        REQUIRE(!(g == g_1));
+      }
+    }
+
+    THEN("compare graph with same nodes but no edges") {
+      gdwg::Graph<std::string, double> g_copy{g};
+      THEN("These two graphs should not be equal") {
+        REQUIRE(g != g_copy);
+        REQUIRE(!(g == g_copy));
+      }
+    }
+
+    THEN("compare graph with same nodes but different edges") {
+      GIVEN("A same graph with one weight difference") {
+        auto e3 = std::make_tuple("A", "B", 4.5);
+        auto e4 = std::make_tuple("B", "C", 7.6);
+        auto v = std::vector<std::tuple<std::string, std::string, double>>{e3, e4};
+        gdwg::Graph<std::string, double> g_1{v.begin(), v.end()};
+        THEN("These two graphs should not be equal") {
+          REQUIRE(g != g_1);
+          REQUIRE(!(g == g_1));
+        }
+
+        AND_WHEN("We modify these edge to match the graph") {
+          REQUIRE(g_1.erase("A", "B", 4.5) == true);
+          REQUIRE(g_1.InsertEdge("A", "B", 5.4) == true);
+          THEN("These two graphs should be equal") {
+            REQUIRE(g == g_1);
+            REQUIRE(!(g != g_1));
+          }
+        }
+      }
+    }
+
+    THEN("compare graph with differnet nodes") {
+      GIVEN("A same graph with one weight difference") {
+        auto e3 = std::make_tuple("A", "B", 4.5);
+        auto e4 = std::make_tuple("B", "C", 7.6);
+        auto v = std::vector<std::tuple<std::string, std::string, double>>{e3, e4};
+        gdwg::Graph<std::string, double> g_1{v.begin(), v.end()};
+        THEN("These two graphs should be equal") {
+          REQUIRE(g != g_1);
+          REQUIRE(!(g == g_1));
+        }
       }
     }
   }

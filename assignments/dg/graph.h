@@ -344,7 +344,7 @@ class Graph {
       auto iter_lhs = lhs.nodes_[node_ptr].begin();
       auto iter_rhs = rhs.nodes_[node_ptr].begin();
       for (;iter_lhs != lhs.nodes_[node_ptr].end(), iter_rhs != rhs.nodes_[node_ptr].end(); iter_lhs++, iter_rhs++) {
-        if ((*iter_lhs->first->value != *iter_rhs->first->value) || *iter_lhs->second != *iter_rhs->second) {
+        if ((*iter_lhs->first.lock()->value != *iter_rhs->first.lock()->value) || *iter_lhs->second != *iter_rhs->second) {
           return false;
         }
       }
