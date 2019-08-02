@@ -1,10 +1,8 @@
 #include "assignments/dg/graph.h"
-
-#include <iostream>
-#include <algorithm>
-
+//include libarary in .h file
 //dont include graph.h here
 //TODO: after merge, put all the comment in .h and .tpp
+
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
@@ -206,7 +204,6 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
     // actual value of src
   }
 
-
   std::set<N> result_set;
 
   NodePtr src_ptr = std::make_shared<Node>(src);
@@ -228,8 +225,7 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
 template<typename N, typename E>
 std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) const{
   if (!IsNode(src) || !IsNode(dst)) {
-    throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the "
-                            "graph");
+    throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the graph");
   }
 
   // use a iterator
@@ -238,10 +234,15 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) const{
   auto& edges = it->second;
 
   std::vector<E> result;
+
+  //look through that edgeSet the find all the correct edge
   for (const auto& edge : edges) {
     auto edge_ptr = edge.first.lock();
-    if (edge_ptr->value == dst) {
-      result.push_back(edge.second);
+    if (edge_ptr) {// the the share_ptr is not null
+      //we compare the node value of that share_ptr
+      if(edge_ptr->value == dst) {
+        result.push_back(edge.second);
+      }
     }
   }
 
@@ -416,10 +417,12 @@ typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg
       //store the all the value for next iterator position
       ++it;
 
-      //if we ++ will reach the end, then we return end
+      //if we ++ will reach the end, then we return a new end
       if(it == cend()) {
         erase(src, dst, e);
-        return (it);
+        decltype(*this) new_graph{*this};
+        auto new_end = new_graph.cend();
+        return (new_end);
       }
 
       //else we will get prepare to return a iterator point to next position

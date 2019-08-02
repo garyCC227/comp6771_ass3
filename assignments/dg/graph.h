@@ -331,22 +331,28 @@ class Graph {
   friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
     auto node_lhs = lhs.GetNodes();
     auto node_rhs = rhs.GetNodes();
-    // compare the nodes
+    // compare the nodes, need to be same
     if (node_lhs.size() != node_rhs.size() || node_lhs != node_rhs) return false;
 
-    // then iterate to compare edge sets
-    for (const auto& node : node_lhs) {
-      auto node_ptr = std::make_shared<Node>(node);
+    auto it_rhs = rhs.nodes_.begin();
+    auto it_lhs = lhs.nodes_.begin();
+    for (;it_lhs != lhs.nodes_.end(), it_rhs != rhs.nodes_.end(); ++it_lhs, ++it_rhs) {
+      // compare the key value
+      if (it_lhs->first->value != it_rhs->first->value ) return false;
+      // check if they have same number of edges
+      if (it_lhs->second.size() != it_rhs->second.size()) return false;
 
-      // if they have different size for same edgeset
-      if (lhs.nodes_[node_ptr].size() != rhs.nodes_[node_ptr].size()) return false;
-      // using iterators of set
-      auto iter_lhs = lhs.nodes_[node_ptr].begin();
-      auto iter_rhs = rhs.nodes_[node_ptr].begin();
-      for (;iter_lhs != lhs.nodes_[node_ptr].end(), iter_rhs != rhs.nodes_[node_ptr].end(); iter_lhs++, iter_rhs++) {
-        if ((*iter_lhs->first.lock()->value != *iter_rhs->first.lock()->value) || *iter_lhs->second != *iter_rhs->second) {
+      // then iterate the edgeSet to compre edges
+      auto edge_iterL = it_lhs->second.begin();
+      auto edge_iterR = it_rhs->second.begin();
+      for (;edge_iterL != it_lhs->second.end(), edge_iterR != it_rhs->second.end(); ++edge_iterL, ++edge_iterR) {
+        // if one of them are false
+        if (!(edge_iterL->first.lock() && edge_iterR->first.lock()))
           return false;
-        }
+        // compare both dest amd weogjt
+        bool dest_equal = (edge_iterL->first.lock()->value == edge_iterR->first.lock()->value);
+        bool weight_equal = (edge_iterL->second == edge_iterR->second);
+        if (!dest_equal || !weight_equal) return false;
       }
     }
 
@@ -380,6 +386,8 @@ class Graph {
 };
 
 }  // namespace gdwg
+
+
 
 #include "assignments/dg/graph.tpp"
 

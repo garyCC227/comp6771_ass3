@@ -17,6 +17,17 @@ int main() {
 //  --iter;
 //  --iter;
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
+
+//  gdwg::Graph<std::string, int> g;
+//  g.InsertNode("a");
+//  g.InsertNode("b");
+//  g.InsertNode("c");
+//  g.InsertEdge("a", "c", 1);
+//  g.InsertEdge("a", "c", 2);
+//  auto iter = g.cend();
+//  --iter;
+//  --iter;
+//  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 //  std::cout << g << '\n';
   /*
   // ========================== test constructor/assignment ========================
@@ -111,16 +122,27 @@ int main() {
 //      std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 //  }
 //
-  // TODO: replace and merge replace
-  auto e3 = std::make_tuple("A", "B", 5);
-  auto e4 = std::make_tuple("A", "C", 6);
-  auto e5 = std::make_tuple("A", "D", 7);
-  auto e6 = std::make_tuple("E", "C", 8);
-  auto e7 = std::make_tuple("Z", "E", 8);
-  auto e8 = std::make_tuple("Z", "E", 10);
-  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5, e6, e7,e8};
-  gdwg::Graph<std::string, double> g_mergeReplace {v_tmp.begin(), v_tmp.end()};
-  std::cout << g_mergeReplace.GetConnected("Z").size();
+
+////  // TODO: replace and merge replace
+//  auto e3 = std::make_tuple("A", "B", 5);
+//  auto e4 = std::make_tuple("A", "C", 6);
+//  auto e5 = std::make_tuple("A", "D", 7);
+//  auto e6 = std::make_tuple("E", "C", 8);
+//  auto e7 = std::make_tuple("Z", "E", 8);
+//  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5, e6, e7};
+//  gdwg::Graph<std::string, double> g_mergeReplace {v_tmp.begin(), v_tmp.end()};
+//
+//  // TODO: replace and merge replace
+//  auto e3 = std::make_tuple("A", "B", 5);
+//  auto e4 = std::make_tuple("A", "C", 6);
+//  auto e5 = std::make_tuple("A", "D", 7);
+//  auto e6 = std::make_tuple("E", "C", 8);
+//  auto e7 = std::make_tuple("Z", "E", 8);
+//  auto e8 = std::make_tuple("Z", "E", 10);
+//  auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5, e6, e7,e8};
+//  gdwg::Graph<std::string, double> g_mergeReplace {v_tmp.begin(), v_tmp.end()};
+//  std::cout << g_mergeReplace.GetConnected("Z").size();
+
 //  g_mergeReplace.InsertEdge("C", "B", 10);
 //  g_mergeReplace.InsertEdge("B", "D", 1);
 //  g_mergeReplace.InsertEdge("D", "A", 10);
@@ -132,9 +154,6 @@ int main() {
 //  std::cout << ">>>>>>>g_mergeReplace\n" << g_mergeReplace << "\n";
 
 
-//  gdwg::Graph<std::string, double> g;
-//  g.GetNodes();
-//  std::cout << (g != g_mergeReplace);
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 //  for(auto iter = g.crbegin(); iter != g.crend(); ++iter){
 //    std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
@@ -154,5 +173,15 @@ int main() {
 //  for (const auto& [from, to, weight] : g) {
 //    std::cout << from << " -> " << to << " (weight " << weight << ")\n";
 //  }
+  std::string s1{"A"};
+  std::string s2{"B"};
+  std::string s3{"C"};
+  auto e1 = std::make_tuple(s1, s2, 5.4);
+  auto e2 = std::make_tuple(s2, s3, 7.6);
+  auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2};
+  gdwg::Graph<std::string, double> g{e.begin(), e.end()};
 
+  gdwg::Graph<std::string, double> g_copy{"A", "B", "C"};
+  gdwg::Graph<std::string, double> g_1{"A", "B", "C"};
+  std::cout << (g_1 == g_copy);
 }
