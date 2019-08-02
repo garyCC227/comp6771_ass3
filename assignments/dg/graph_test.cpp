@@ -352,7 +352,7 @@ SCENARIO("Testing templates") {
  *          IsNode(const N&)  IsConnected(const N&, const N&)
  */
 SCENARIO("Getting graph info from provided functions") {
-  GIVEN("A non empty graph") {
+  GIVEN("1. A non empty graph") {
     gdwg::Graph<double, double> g{1.1, 5.5, 3.3, 7.7};
     THEN("the size should be 4") REQUIRE(g.GetNodes().size() == 4);
 
@@ -381,7 +381,7 @@ SCENARIO("Getting graph info from provided functions") {
   }
 
 
-  GIVEN("A non empty graph with edges") {
+  GIVEN("2. A non empty graph with edges") {
     std::string s1{"Hello"};
     std::string s2{"how"};
     std::string s3{"are"};
@@ -433,8 +433,9 @@ SCENARIO("Getting graph info from provided functions") {
     }
 
     WHEN("Find the outgoing edges from how") {
+      g.InsertEdge("how", "are", 10);
       std::vector edges = g.GetConnected("how");
-      AND_THEN("Only 1 edge with weight 7.6") {
+      AND_THEN("Only 1 edge") {
         REQUIRE(edges.size() == 1);
         THEN("The returned edges should match the graph") {
           REQUIRE(edges.at(0) == "are");
@@ -442,7 +443,7 @@ SCENARIO("Getting graph info from provided functions") {
         WHEN("We try to find the weight between two vertex") {
           std::vector weights = g.GetWeights("how", "are");
           THEN("Only one weight and should match") {
-            REQUIRE(weights.size() == 1);
+            REQUIRE(weights.size() == 2);
             REQUIRE(weights.at(0) == 7.6);
           }
 
@@ -465,7 +466,7 @@ SCENARIO("Getting graph info from provided functions") {
     }
   }
 
-   GIVEN("A non empty graph that has node with multiple edges") {
+   GIVEN("3. A non empty graph that has node with multiple edges") {
     std::string s1{"Hello"};
     std::string s2{"how"};
     std::string s3{"are"};
@@ -525,7 +526,8 @@ SCENARIO("Getting graph info from provided functions") {
  *              1. Insert Node
  *              2. Insert Edge
  *              3. Delete Node
- *              4. Comprehensive tests
+ *              4. TODO: erase edge
+ *              5. Comprehensive tests
  *
  *  method tested: InsertNode(const N& val) InsertEdge(const N& src, const N& dst, const E& w)
  *          DeleteNode(const N&)
@@ -638,7 +640,8 @@ SCENARIO("Modify graph from provided functions") {
       inserted = g.InsertEdge(1, 2, 9);
       THEN("Vertex with different weight is inserted") {
         REQUIRE(inserted == true);
-        REQUIRE(g.GetConnected(1).size() == 2);
+        REQUIRE(g.GetConnected(1).size() == 1);
+        REQUIRE(g.GetWeights(1, 2).size() == 2);
         THEN("The order of insertion is checked") {
           std::ostringstream os;
           os << g;
@@ -738,7 +741,36 @@ SCENARIO("Modify graph from provided functions") {
     }
   }
 
-  GIVEN("4. Comprehensive operations to a given graph") {
+  GIVEN("4 test earse edges using given graph") {
+    std::string s1{"a"};
+    std::string s2{"b"};
+    std::string s3{"c"};
+    auto e1 = std::make_tuple(s1, s2, 1);
+    auto e2 = std::make_tuple(s2, s3, 2);
+    auto e3 = std::make_tuple(s3, s1, 3);
+    auto e4 = std::make_tuple(s2, s1, 4);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3, e4};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    WHEN("erase edge that with node not in the graph") {
+      bool erased = g.erase("x", "z", 1);
+      REQUIRE(erased == false);
+      erased = g.erase("a", "z", 1);
+      REQUIRE(erased == false);
+    }
+
+    WHEN("erase edge that is in the graph") {
+      bool erased = g.erase("a", "b", 1);
+      REQUIRE(erased == true);
+      REQUIRE(g.IsConnected("a", "b") == false);
+      THEN("remove the edge again") {
+        erased = g.erase("a", "b", 1);
+        REQUIRE(erased == false);
+      }
+    }
+  }
+
+  GIVEN("5. Comprehensive operations to a given graph") {
     auto e3 = std::make_tuple("A", "B", 5);
     auto e4 = std::make_tuple("A", "C", 6);
     auto e5 = std::make_tuple("A", "D", 7);
@@ -823,7 +855,7 @@ SCENARIO("Modify graph from provided functions") {
  *              2.MergeRepalce
  *                2.1 Basic (no other incoming edge)
  *                2.2 Duplicate edge removed
- *                2.3 Diagrammatic
+ *                2.3 Comprehensive MerReplace nodes with incoming/outgoing nodes
  *  method: Replace(const N&, const N&)
  *          MergeReplace(const N&, const N&)
  */
@@ -864,21 +896,28 @@ SCENARIO("Replace and MergeReplace nodes in graph") {
     }
 
     AND_WHEN("We replace node A by Z") {
-      g.Replace("A", "Z");
+      bool replaced = g.Replace("A", "Z");
+
+      REQUIRE(replaced == true);
       REQUIRE(g.GetNodes().size() == 3);
       REQUIRE(g.IsNode("A") == false);
-    }
+      REQUIRE(g.IsNode("Z") == true);
 
-    THEN("The graph should update, the order should also update") {
-      REQUIRE(os.str() == "A (\n"
-                          "  B | 5\n"
-                          "  C | 6\n"
-                          ")\n"
-                          "B (\n"
-                          "  C | 5\n"
-                            ")\n"
-                          "C (\n"
+      THEN("The edge from A should be repalced by Z") {
+        REQUIRE(g.IsConnected("Z", "B") == true);
+        REQUIRE(g.IsConnected("Z", "C") == true);
+        os.str("");
+        os << g;
+        REQUIRE(os.str() =="B (\n"
+                            "  C | 5\n"
+                              ")\n"
+                            "C (\n"
+                              ")\n"
+                             "Z (\n"
+                            "  B | 5\n"
+                            "  C | 6\n"
                             ")\n");
+      }
     }
   }
 
@@ -886,9 +925,7 @@ SCENARIO("Replace and MergeReplace nodes in graph") {
     auto e3 = std::make_tuple("A", "B", 5);
     auto e4 = std::make_tuple("A", "C", 6);
     auto e5 = std::make_tuple("A", "D", 7);
-    auto e6 = std::make_tuple("E", "C", 8);
-    auto e7 = std::make_tuple("Z", "E", 8);
-    auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5, e6, e7};
+    auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5};
     gdwg::Graph<std::string, double> g {v_tmp.begin(), v_tmp.end()};
     g.InsertEdge("C", "B", 10);
     g.InsertEdge("B", "D", 1);
@@ -911,68 +948,238 @@ SCENARIO("Replace and MergeReplace nodes in graph") {
                           ")\n"
                         "D (\n"
                         "  A | 10\n"
-                        ")\n"
-                        "E (\n"
-                        "  C | 8\n"
-                        ")\n"
-                        "Z (\n"
-                        "  E | 8\n"
                         ")\n");
+
     WHEN("Replace node by Q") {
       g.Replace("A", "Q");
       REQUIRE(g.IsNode("A") == false);
-      os.str("");
-      os << g;
-      REQUIRE(os.str() == "B (\n"
-                          "  D | 1\n"
-                            ")\n"
-                          "C (\n"
-                          "  B | 10\n"
-                            ")\n"
-                          "D (\n"
-                          "  Q | 10\n"
-                          ")\n"
-                          "E (\n"
-                          "  C | 8\n"
-                          ")\n"
-                          "Q (\n"
-                          "  B | 5\n"
-                          "  C | 6\n"
-                          "  D | 7\n"
-                          "  Q | 10\n"
-                          ")\n"
-                          "Z (\n"
-                          "  E | 8\n"
-                          ")\n");
-    }
-  }
+      REQUIRE(g.IsNode("Q") == true);
 
-  GIVEN("2.1 MergeReplace of a node with no incoming edge") {
-    auto e1 = std::make_tuple("A", "B", 5);
-    auto e2 = std::make_tuple("A", "C", 6);
-    auto e3 = std::make_tuple("B", "C", 5);
-    auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3};
-    gdwg::Graph<std::string, double> g {v_tmp.begin(), v_tmp.end()};
+      THEN("All the outgoing and incoming edges should be updated") {
+        REQUIRE(g.IsConnected("Q", "Q") == true);
+        REQUIRE(g.IsConnected("Q", "B") == true);
+        REQUIRE(g.IsConnected("Q", "C") == true);
+        REQUIRE(g.IsConnected("Q", "D") == true);
+        REQUIRE(g.IsConnected("D", "Q") == true);
+      }
 
-    WHEN("We replace node that is not in the graph") {
-      THEN("This action would fail") {
-        std::string excp = "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
-        REQUIRE_THROWS_AS(g.MergeReplace("Z", "E"), std::runtime_error);
-        REQUIRE_THROWS_WITH(g.MergeReplace("Z", "E"), excp);
+      THEN("The final graph output") {
+        os.str("");
+        os << g;
+        REQUIRE(os.str() == "B (\n"
+                            "  D | 1\n"
+                              ")\n"
+                            "C (\n"
+                            "  B | 10\n"
+                              ")\n"
+                            "D (\n"
+                            "  Q | 10\n"
+                            ")\n"
+                            "Q (\n"
+                            "  B | 5\n"
+                            "  C | 6\n"
+                            "  D | 7\n"
+                            "  Q | 10\n"
+                            ")\n");
       }
     }
   }
 
-  GIVEN("2.2 MergeReplace of a node with no incoming edge") {
+  GIVEN("2.1 MergeReplace of a node with no incoming edge") {
+    std::tuple e1 = std::make_tuple("A", "B", 5);
+    std::tuple e2 = std::make_tuple("A", "C", 6);
+    std::tuple e3 = std::make_tuple("B", "C", 5);
+    std::vector v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3};
+    gdwg::Graph<std::string, double> g {v_tmp.begin(), v_tmp.end()};
+
+    WHEN("We mergereaplce node that is not in the graph") {
+      THEN("This action would fail") {
+        std::string excp = "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
+        REQUIRE_THROWS_AS(g.MergeReplace("Z", "A"), std::runtime_error);
+        REQUIRE_THROWS_WITH(g.MergeReplace("Z", "A"), excp);
+        REQUIRE_THROWS_AS(g.MergeReplace("A", "Z"), std::runtime_error);
+        REQUIRE_THROWS_WITH(g.MergeReplace("A", "Z"), excp);
+      }
+    }
+
+    WHEN("We mergereaplce node") {
+     g.MergeReplace("A", "B");
+     THEN("The graph should have two nodes now") {
+       REQUIRE(g.GetNodes().size() == 2);
+       REQUIRE(g.IsNode("A") == false);
+
+       THEN("The edges that were in A should append to B now") {
+        REQUIRE(g.IsConnected("B", "B") == true);
+        REQUIRE(g.IsConnected("B", "C") == true);
+
+        THEN("B to C has two edges now") {
+          std::vector weights = g.GetWeights("B", "C");
+          REQUIRE(weights.size() == 2);
+          REQUIRE(weights[0] == 5);
+          REQUIRE(weights[1] == 6);
+        }
+       }
+     }
+
+     AND_THEN("The final graph"){
+      std::ostringstream os;
+      os.str("");
+      os << g;
+      REQUIRE(os.str() == "B (\n"
+                          "  B | 5\n"
+                          "  C | 5\n"
+                          "  C | 6\n"
+                          ")\n"
+                          "C (\n"
+                            ")\n");
+     }
+    }
+  }
+
+  GIVEN("2.2 MergeReplace of a node with duplicate edges") {
+    std::tuple e1 = std::make_tuple("A", "B", 5);
+    std::tuple e2 = std::make_tuple("A", "C", 6);
+    std::tuple e3 = std::make_tuple("B", "B", 5);
+    std::vector v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3};
+    gdwg::Graph<std::string, double> g {v_tmp.begin(), v_tmp.end()};
+
+    WHEN("MergeReplace") {
+     g.MergeReplace("A", "B");
+     THEN("The graph should have two nodes now") {
+       REQUIRE(g.GetNodes().size() == 2);
+       REQUIRE(g.IsNode("A") == false);
+
+       THEN("The edges that were in A should append to B now") {
+        REQUIRE(g.IsConnected("B", "B") == true);
+        REQUIRE(g.IsConnected("B", "C") == true);
+
+        THEN("The duplicate edges B-B is removed") {
+          std::vector weights = g.GetWeights("B", "B");
+          REQUIRE(weights.size() == 1);
+          REQUIRE(weights[0] == 5);
+        }
+       }
+     }
+
+     AND_THEN("The final graph"){
+      std::ostringstream os;
+      os.str("");
+      os << g;
+      REQUIRE(os.str() == "B (\n"
+                          "  B | 5\n"
+                          "  C | 6\n"
+                          ")\n"
+                          "C (\n"
+                            ")\n");
+     }
+    }
+  }
+
+  GIVEN("2.3 Comprehensive MergeReplace nodes with incoming/outgoing nodes") {
+    auto e3 = std::make_tuple("A", "B", 5);
+    auto e4 = std::make_tuple("A", "C", 6);
+    auto e5 = std::make_tuple("A", "D", 7);
+    auto v_tmp = std::vector<std::tuple<std::string, std::string, double>>{e3, e4, e5};
+    gdwg::Graph<std::string, double> g {v_tmp.begin(), v_tmp.end()};
+    g.InsertEdge("C", "B", 10);
+    g.InsertEdge("B", "D", 1);
+    g.InsertEdge("D", "A", 10);
+    g.InsertEdge("A", "A", 10);
+
+    std::ostringstream os;
+    os << g;
+    REQUIRE(os.str() == "A (\n"
+                        "  A | 10\n"
+                        "  B | 5\n"
+                        "  C | 6\n"
+                        "  D | 7\n"
+                        ")\n"
+                        "B (\n"
+                        "  D | 1\n"
+                          ")\n"
+                        "C (\n"
+                        "  B | 10\n"
+                          ")\n"
+                        "D (\n"
+                        "  A | 10\n"
+                        ")\n");
+
+    WHEN("MergeReplace node by B") {
+      g.MergeReplace("A", "B");
+      REQUIRE(g.IsNode("A") == false);
+
+      THEN("All the outgoing and incoming edges should be updated") {
+        REQUIRE(g.IsConnected("B", "B") == true);
+        REQUIRE(g.IsConnected("B", "C") == true);
+        REQUIRE(g.IsConnected("B", "D") == true);
+        THEN("The edges B-D are merged") {
+          auto weights = g.GetWeights("B", "D");
+          REQUIRE(weights.size() == 2);
+          REQUIRE(weights[0] == 1);
+          REQUIRE(weights[1] == 7);
+        }
+
+        THEN("The incoming edges should update") {
+          REQUIRE(g.IsConnected("C", "B") == true);
+          REQUIRE(g.IsConnected("D", "B") == true);
+          auto weights = g.GetWeights("D", "B");
+          REQUIRE(weights.size() == 1);
+          REQUIRE(weights[0] == 10);
+        }
+      }
+      THEN("The final graph output") {
+        os.str("");
+        os << g;
+        REQUIRE(os.str() == "B (\n"
+                            "  B | 5\n"
+                            "  B | 10\n"
+                            "  C | 6\n"
+                            "  D | 1\n"
+                            "  D | 7\n"
+                              ")\n"
+                            "C (\n"
+                            "  B | 10\n"
+                              ")\n"
+                            "D (\n"
+                            "  B | 10\n"
+                            ")\n");
+      }
+    }
   }
 }
+
 /*
  *  6. Test friend.
  *  How to test:
- *              TODO:
- *  method: Replace(const N&, const N&)
- *          MergeReplace(const N&, const N&)
+ *              1. == and !=
+ *
+ *  method: == !=
  */
+SCENARIO("Testing friend funciton") {
+  GIVEN("A graph with nodes and edges") {
+    std::string s1{"A"};
+    std::string s2{"B"};
+    std::string s3{"C"};
+    auto e1 = std::make_tuple(s1, s2, 5.4);
+    auto e2 = std::make_tuple(s2, s3, 7.6);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2};
+    gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
+    THEN("We copy this garph") {
+      gdwg::Graph<std::string, double> g_copy{g};
+      THEN("These two graphs should be equal") {
+        REQUIRE(g == g_copy);
+      }
+    }
+
+    THEN("compare auto empty graph") {
+      gdwg::Graph<std::string, double> g_empty;
+      THEN("These two graphs should be equal") {
+        REQUIRE(g != g_empty);
+      }
+    }
+  }
+}
 
 /*
  *  7. Test Cont graph.

@@ -329,11 +329,32 @@ class Graph {
    * friends implementation
    */
   friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
-    return (lhs.nodes_ == rhs.nodes_);
+    auto node_lhs = lhs.GetNodes();
+    auto node_rhs = rhs.GetNodes();
+    // compare the nodes
+    if (node_lhs.size() != node_rhs.size() || node_lhs != node_rhs) return false;
+
+    // then iterate to compare edge sets
+    for (const auto& node : node_lhs) {
+      auto node_ptr = std::make_shared<Node>(node);
+
+      // if they have different size for same edgeset
+      if (lhs.nodes_[node_ptr].size() != rhs.nodes_[node_ptr].size()) return false;
+      // using iterators of set
+      auto iter_lhs = lhs.nodes_[node_ptr].begin();
+      auto iter_rhs = rhs.nodes_[node_ptr].begin();
+      for (;iter_lhs != lhs.nodes_[node_ptr].end(), iter_rhs != rhs.nodes_[node_ptr].end(); iter_lhs++, iter_rhs++) {
+        if ((*iter_lhs->first->value != *iter_rhs->first->value) || *iter_lhs->second != *iter_rhs->second) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
-    return !(lhs.nodes_ == rhs.nodes_);
+    return !(lhs == rhs);
   }
 
   friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g) noexcept {

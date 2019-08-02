@@ -131,7 +131,6 @@ template<typename N, typename E>
 bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst) const{
   // check is Node existed?
   if (!IsNode(src) || !IsNode(dst)) {
-    // TODO:check exception message: print "src or dst" |  "src" or "dst"
     throw std::runtime_error(
         "Cannot call Graph::IsConnected if src or dst node don't exist in the graph");
   }
@@ -207,7 +206,9 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
     // actual value of src
   }
 
-  std::vector<N> result;
+
+  std::set<N> result_set;
+
   NodePtr src_ptr = std::make_shared<Node>(src);
   auto it = nodes_.find(src_ptr);
   auto& edges = it->second;
@@ -215,9 +216,11 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
   for (const auto& edge : edges) {
     auto edge_ptr = edge.first.lock();
     if (edge_ptr) {
-      result.push_back(edge_ptr->value);
+      result_set.insert(edge_ptr->value);
     }
   }
+
+  std::vector<N> result(result_set.begin(), result_set.end());
 
   return result;
 }
@@ -226,29 +229,37 @@ template<typename N, typename E>
 std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) const{
   if (!IsNode(src) || !IsNode(dst)) {
     throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the "
-                            "graph");  // TODO: check error info is src or dst || the actual value
+                            "graph");
   }
 
+  // use a iterator
   NodePtr src_ptr = std::make_shared<Node>(src);
   auto it = nodes_.find(src_ptr);
   auto& edges = it->second;
 
   std::vector<E> result;
-  if (IsConnected(src, dst)) {
-    auto predicate = [&dst](const EdgePair& edge) {
-      auto dst_ptr = edge.first.lock();
-      if (dst_ptr) {
-        return (dst_ptr->value == dst);
-      }
-      return false;
-    };  // predicate: check is such edge exist?
-
-    // find the edge
-    auto found = std::find_if(std::begin(edges), std::end(edges), predicate);
-    if (found != std::end(edges)) {
-      result.push_back(found->second);
+  for (const auto& edge : edges) {
+    auto edge_ptr = edge.first.lock();
+    if (edge_ptr->value == dst) {
+      result.push_back(edge.second);
     }
   }
+
+//  if (IsConnected(src, dst)) {
+//    auto predicate = [&dst](const EdgePair& edge) {
+//      auto dst_ptr = edge.first.lock();
+//      if (dst_ptr) {
+//        return (dst_ptr->value == dst);
+//      }
+//      return false;
+//    };  // predicate: check is such edge exist?
+//
+//    // find the edge
+//    auto found = std::find_if(std::begin(edges), std::end(edges), predicate);
+//    if (found != std::end(edges)) {
+//      result.push_back(found->second);
+//    }
+//  }
   return result;
 }
 
@@ -282,6 +293,7 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dst, const E& w) noexcept {
     // if we found it, erase it
     edges.erase(found);
     nodes_[src_ptr] = edges;  // update edges set
+    return true;
   }
 
   // return false, since we didnt find the edge with that weight
