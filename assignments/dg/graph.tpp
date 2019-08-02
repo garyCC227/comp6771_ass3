@@ -1,5 +1,8 @@
+#include "assignments/dg/graph.h"
+//include libarary in .h file
 //dont include graph.h here
 //TODO: after merge, put all the comment in .h and .tpp
+
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
@@ -126,7 +129,6 @@ template<typename N, typename E>
 bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst) const{
   // check is Node existed?
   if (!IsNode(src) || !IsNode(dst)) {
-    // TODO:check exception message: print "src or dst" |  "src" or "dst"
     throw std::runtime_error(
         "Cannot call Graph::IsConnected if src or dst node don't exist in the graph");
   }
@@ -168,12 +170,22 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& val) noexcept{
   if (!IsNode(val))
     return false;
 
-  for (auto begin = nodes_.begin(); begin != nodes_.end(); ++begin) {
-    if (begin->first->value == val) {
-      nodes_.erase(begin);
-      break;
+  // make ptr to the value to be revmoed
+  auto old_ptr = std::make_shared<Node>(val);
+
+  // iterate through the map to find oldData(need to be reaplce)
+  // and extract-insert to the newData
+  for (auto& entry : nodes_) {
+    if (entry.first->value == val) continue;
+    for (auto& edge : entry.second) {
+      if (edge.first.lock()->value == val) {
+        // remove edges
+        entry.second.extract(edge);
+      }
     }
   }
+  // remove the entry from the map
+  nodes_.extract(old_ptr);
 
   return true;
 }
@@ -192,7 +204,8 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
     // actual value of src
   }
 
-  std::vector<N> result;
+  std::set<N> result_set;
+
   NodePtr src_ptr = std::make_shared<Node>(src);
   auto it = nodes_.find(src_ptr);
   auto& edges = it->second;
@@ -200,9 +213,11 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
   for (const auto& edge : edges) {
     auto edge_ptr = edge.first.lock();
     if (edge_ptr) {
-      result.push_back(edge_ptr->value);
+      result_set.insert(edge_ptr->value);
     }
   }
+
+  std::vector<N> result(result_set.begin(), result_set.end());
 
   return result;
 }
@@ -210,30 +225,42 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& src) const {
 template<typename N, typename E>
 std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) const{
   if (!IsNode(src) || !IsNode(dst)) {
-    throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the "
-                            "graph");  // TODO: check error info is src or dst || the actual value
+    throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the graph");
   }
 
+  // use a iterator
   NodePtr src_ptr = std::make_shared<Node>(src);
   auto it = nodes_.find(src_ptr);
   auto& edges = it->second;
 
   std::vector<E> result;
-  if (IsConnected(src, dst)) {
-    auto predicate = [&dst](const EdgePair& edge) {
-      auto dst_ptr = edge.first.lock();
-      if (dst_ptr) {
-        return (dst_ptr->value == dst);
-      }
-      return false;
-    };  // predicate: check is such edge exist?
 
-    // find the edge
-    auto found = std::find_if(std::begin(edges), std::end(edges), predicate);
-    if (found != std::end(edges)) {
-      result.push_back(found->second);
+  //look through that edgeSet the find all the correct edge
+  for (const auto& edge : edges) {
+    auto edge_ptr = edge.first.lock();
+    if (edge_ptr) {// the the share_ptr is not null
+      //we compare the node value of that share_ptr
+      if(edge_ptr->value == dst) {
+        result.push_back(edge.second);
+      }
     }
   }
+
+//  if (IsConnected(src, dst)) {
+//    auto predicate = [&dst](const EdgePair& edge) {
+//      auto dst_ptr = edge.first.lock();
+//      if (dst_ptr) {
+//        return (dst_ptr->value == dst);
+//      }
+//      return false;
+//    };  // predicate: check is such edge exist?
+//
+//    // find the edge
+//    auto found = std::find_if(std::begin(edges), std::end(edges), predicate);
+//    if (found != std::end(edges)) {
+//      result.push_back(found->second);
+//    }
+//  }
   return result;
 }
 
@@ -267,6 +294,7 @@ bool gdwg::Graph<N, E>::erase(const N& src, const N& dst, const E& w) noexcept {
     // if we found it, erase it
     edges.erase(found);
     nodes_[src_ptr] = edges;  // update edges set
+    return true;
   }
 
   // return false, since we didnt find the edge with that weight

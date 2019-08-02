@@ -329,29 +329,111 @@ class Graph {
    * friends implementation
    */
   friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
-    return (lhs.nodes_ == rhs.nodes_);
+//    auto node_lhs = lhs.GetNodes();
+//    auto node_rhs = rhs.GetNodes();
+//    // compare the nodes
+//    if (node_lhs.size() != node_rhs.size() || node_lhs != node_rhs) return false;
+//
+//    // then iterate to compare edge sets
+//    for (const auto& node : node_lhs) {
+//      auto node_ptr = std::make_shared<Node>(node);
+//
+//      // if they have different size for same edgeset
+//      if (lhs.nodes_[node_ptr].size() != rhs.nodes_[node_ptr].size()) return false;
+//      // using iterators of set
+//      auto iter_lhs = lhs.nodes_[node_ptr].begin();
+//      auto iter_rhs = rhs.nodes_[node_ptr].begin();
+//      for (;iter_lhs != lhs.nodes_[node_ptr].end(), iter_rhs != rhs.nodes_[node_ptr].end(); iter_lhs++, iter_rhs++) {
+//        if ((*iter_lhs->first->value != *iter_rhs->first->value) || *iter_lhs->second != *iter_rhs->second) {
+//          return false;
+//        }
+//      }
+//    }
+//
+//    return true;
+
+    //compare the node size first -> if not, we can just return false
+    if(lhs.nodes_.size() != rhs.nodes_.size()){
+      // doesnt have equal amount of nodes
+      return false;
+    }
+
+    //then we compare the actual value of node and the edges of each node
+    //since it's map -> the order of storing node is same, so we can just loop from begin->end
+    // to check each entity
+    auto rhs_curr = rhs.nodes_.cbegin(); //TODO BUG
+    for(auto lhs_curr = lhs.nodes_.cbegin(); lhs_curr != rhs.nodes_.cend(); ++lhs_curr){
+      //Node value are not the same
+      if(lhs_curr->first->value != rhs_curr->first->value) return false;
+
+      //start to compare edgeSet
+
+      auto lhs_edges = lhs_curr->second;
+      auto rhs_edges = rhs_curr->second;
+      auto lhs_valid_edges = lhs.FindValidEdgeInEdgeSet(lhs_edges);
+      auto rhs_valid_edges = rhs.FindValidEdgeInEdgeSet(rhs_edges);
+
+      //compare valid edges
+      //compare size first
+      if(lhs_valid_edges.size() != rhs_valid_edges.size()) return false;
+
+      auto rhs_it = rhs_valid_edges.cbegin();
+      for(auto lhs_it = lhs_valid_edges.cbegin();
+          lhs_it != lhs_valid_edges.cend();
+          ++lhs_it){
+
+        //dst value are not same for this edge pair
+        if(lhs_it->first.lock() != rhs_it->first.lock()) return false;
+
+        //compare weight
+        if(lhs_it->second != rhs_it->second) return false;
+
+        ++rhs_it;
+      }
+      //end of compare edge set
+
+      //go to next node in rhs and lhs
+      ++rhs_curr;
+    }
+
+    return true;
+  }
+
+  //a helper function for == operator
+  std::vector<EdgePair> FindValidEdgeInEdgeSet(const EdgeSet& edges) const{
+    std::vector<EdgePair> valid_edges;
+
+    //predicate that check the weak pointer in pair is null or not
+    auto find_valid_edge = [](const EdgePair& edge){
+      auto dest_ptr = edge.first.lock();
+      if(dest_ptr){
+        return true;
+      }
+      return false;
+    };
+
+    std::copy_if(edges.begin(), edges.end(), std::back_inserter(valid_edges), find_valid_edge);
+
+    return valid_edges;
   }
 
   friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
-    return !(lhs.nodes_ == rhs.nodes_);
+    return !(lhs == rhs);
   }
 
   friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g) noexcept {
     //TODO:change format back to the spec one
     for (const auto& node : g.nodes_) {
       // write node value
-      os << node.first->value << ":(size:"<< node.second.size()<<"){";
+      os << node.first->value << " (\n";
+
       // write edges
       for (const auto& edge : node.second) {
         auto dst_ptr = edge.first.lock();
-        if (!dst_ptr) {
-          os << " " << edge.second << "-->" << " =**= " << " ";
-        } else {
-          os << " " << edge.second << "-->" << dst_ptr->value << " ";
-        }
+        os << "  " << dst_ptr->value << " | " << edge.second << "\n";
       }
 
-      os << "}\n";
+      os << ")\n";
     }
 
     return os;
@@ -362,6 +444,8 @@ class Graph {
 };
 
 }  // namespace gdwg
+
+
 
 #include "assignments/dg/graph.tpp"
 
