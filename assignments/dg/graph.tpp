@@ -389,10 +389,12 @@ typename gdwg::Graph<N,E>::const_iterator gdwg::Graph<N, E>::erase(typename gdwg
       //store the all the value for next iterator position
       ++it;
 
-      //if we ++ will reach the end, then we return end
+      //if we ++ will reach the end, then we return a new end
       if(it == cend()) {
         erase(src, dst, e);
-        return (it);
+        decltype(*this) new_graph{*this};
+        auto new_end = new_graph.cend();
+        return (new_end);
       }
 
       //else we will get prepare to return a iterator point to next position
