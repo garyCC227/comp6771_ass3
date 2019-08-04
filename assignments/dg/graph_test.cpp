@@ -43,8 +43,6 @@
 #include "assignments/dg/graph.h"
 #include "catch.h"
 
-using Catch::Matchers::Contains;
-
 /*
  *  1. Test constructors. How to test:
  *  How to test: Initiate constructors using all constructors available
@@ -1255,13 +1253,80 @@ SCENARIO("Testing friend funciton") {
 
 /*
  *  7. Test Cont graph.
- *  How to test:
- *              TODO:
- *  method: Replace(const N&, const N&)
- *          MergeReplace(const N&, const N&)
+ *  How to test: Test all const method to check the const correctness
+ *  method: 1.GetNodes, IsNode
+ *          2.GetConnected, IsConnected,
+ *          3.GetWeights
  */
+SCENARIO("Check const correctness") {
+  GIVEN("A graph with initialised edges and nodes") {
+    std::string s1{"A"};
+    std::string s2{"B"};
+    std::string s3{"C"};
+    auto e1 = std::make_tuple(s1, s2, 1);
+    auto e2 = std::make_tuple(s2, s3, 2);
+    auto e3 = std::make_tuple(s1, s3, 3);
+    auto e4 = std::make_tuple(s1, s3, 10);
+    auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2, e3, e4};
+    const gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+    std::ostringstream os;
+    os << g;
+    REQUIRE(os.str() == "A (\n"
+                        "  B | 1\n"
+                        "  C | 3\n"
+                        "  C | 10\n"
+                          ")\n"
+                        "B (\n"
+                        "  C | 2\n"
+                          ")\n"
+                        "C (\n"
+                          ")\n");
 
-// TODO: =========== separate line from iterator thing ============================
+    WHEN("7.1 GetNodes and test from the graph") {
+      auto nodes = g.GetNodes();
+      REQUIRE(nodes.size() == 3);
+      REQUIRE(nodes[0] == "A");
+      REQUIRE(nodes[1] == "B");
+      REQUIRE(nodes[2] == "C");
+      THEN("Check the existence of node") {
+        REQUIRE(g.IsNode("A"));
+        REQUIRE(g.IsNode("B"));
+        REQUIRE(g.IsNode("C"));
+        REQUIRE(g.IsNode("Z") == false);
+      }
+    }
+
+    WHEN("7.2 GetConnected edges between nodes and check if they are connected") {
+      auto edges = g.GetConnected("A");
+      REQUIRE(edges.size() == 2);
+      REQUIRE(edges[0] == "B");
+      REQUIRE(edges[1] == "C");
+      THEN("Check those nodes are connected") {
+        REQUIRE(g.IsConnected("A", "A") == false);
+        REQUIRE(g.IsConnected("A", "B"));
+        REQUIRE(g.IsConnected("A", "C"));
+      }
+    }
+
+    WHEN("7.3 GetWeights from an edge") {
+      auto edges = g.GetConnected("A");
+      REQUIRE(edges.size() == 2);
+      REQUIRE(edges[0] == "B");
+      REQUIRE(edges[1] == "C");
+      THEN("Retrieve the edge betwee A and B") {
+        auto weight = g.GetWeights("A", "B");
+        REQUIRE(weight.size() == 1);
+        REQUIRE(weight[0] == 1);
+      }
+      THEN("Retrieve the edge betwee A and B") {
+        auto weight = g.GetWeights("A", "C");
+        REQUIRE(weight.size() == 2);
+        REQUIRE(weight[0] == 3);
+        REQUIRE(weight[1] == 10);
+      }
+    }
+  }
+}
 
 /*
  * 20. Test cbegin() function, How:

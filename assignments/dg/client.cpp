@@ -26,7 +26,8 @@ int main() {
 //  g.InsertEdge("a", "c", 2);
 //  auto iter = g.cend();
 //  --iter;
-//  --iter;
+//  --iter;gdwg::Graph<std::string, double> g{e.begin(), e.end()};
+
 //  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 //  std::cout << g << '\n';
   /*
@@ -177,11 +178,12 @@ int main() {
   std::string s2{"B"};
   std::string s3{"C"};
   auto e1 = std::make_tuple(s1, s2, 5.4);
-  auto e2 = std::make_tuple(s2, s3, 7.6);
+  auto e2 = std::make_tuple(s1, s1, 7.6);
+  auto e3 = std::make_tuple(s1, s2, 5.5);
   auto e = std::vector<std::tuple<std::string, std::string, double>>{e1, e2};
+//  auto e_1 = std::vector<std::tuple<std::string, std::string, double>>{e1, e3};
   gdwg::Graph<std::string, double> g{e.begin(), e.end()};
 
-  gdwg::Graph<std::string, double> g_copy{"A", "B", "C"};
-  gdwg::Graph<std::string, double> g_1{"A", "B", "C"};
-  std::cout << (g_1 == g_copy);
+
+//  std::cout << std::get<0>(*iter) << " -> " << std::get<1>(*iter) << " (weight " << std::get<2>(*iter) << ")\n";
 }

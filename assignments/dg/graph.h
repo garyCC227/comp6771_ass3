@@ -12,13 +12,13 @@
 
 namespace gdwg {
 
-// Custom comparator
+// start of Custom comparator
 template<typename N>
 struct CompareByNode {
   // comparator for Graph -> compare Node value
   bool operator()(const N& lhs, const N& rhs) const { return lhs->value < rhs->value; }
-};
-//
+}; // comparator for std::map
+
 template<typename EP>
 struct CompareByEdgePair {
   bool operator()(const EP& lhs, const EP& rhs) const {
@@ -28,7 +28,8 @@ struct CompareByEdgePair {
     }
     return (std::get<0>(lhs).lock()->value < std::get<0>(rhs).lock()->value);
   }
-};
+};//comparator for std::set (our edgeSet)
+// end of custom compartor
 
 template<typename N, typename E>
 class Graph {
@@ -46,9 +47,10 @@ class Graph {
   using EdgeSet = std::set<EdgePair, CompareByEdgePair<EdgePair>>;//,
   using NodePtr = std::shared_ptr<Node>;
 
-
+  //iterator class
   class const_iterator {
    public:
+    //iterator tag
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = std::tuple<N, N, E>;
     using reference = std::tuple<const N&, const N&, const E&>;
@@ -61,23 +63,29 @@ class Graph {
               inner_iterator_->second};
     }
 
-    //TODO: test case, dunno what to do
     pointer operator->() const { return &(operator*()); }
 
-    // prefix
+    /* prefix ++ operator
+     * algorithm:
+     *  loop through the current outer_iterator level -> to find a valid edge in this level,
+     *  if cannot find, we will go to next level by calling FindValidEdgeForward()
+     */
     const_iterator operator++() {
       if (outer_iterator_ != outer_end_) {
+        //if in this level, curr_inner - end_of_curr_edgeSet > 1 -> so we still have
+        //some more elements to check
         if (std::distance(inner_iterator_, std::cend(outer_iterator_->second)) > 1) {
 
           std::advance(inner_iterator_, 1);
           for (; inner_iterator_ != std::cend(outer_iterator_->second); ++inner_iterator_) {
             auto edge_ptr = inner_iterator_->first.lock();
+            //avoid nullptr for our weak pointer
             if (edge_ptr) {
               return *this;
             }
           }
         }
-        // if reach end of edge set, go to next entity
+        // if reach end of current edge set, go to next level
         ++outer_iterator_;
         FindValidEdgeForward();
       }
@@ -154,11 +162,13 @@ class Graph {
       --(*this);
       return copy;
     }
-    // TODO: NULL graph compare iterator
     friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
       bool outer_equal = (lhs.outer_iterator_ == rhs.outer_iterator_);
       bool inner_equal = (lhs.inner_iterator_ == rhs.inner_iterator_);
       bool outer_at_end = (lhs.outer_iterator_ == lhs.outer_end_);
+      //compare outer_iter, compare inner_iter
+      //but if outer_iter is at end -> then we dont really care inner -> so which mean inner_equal
+      //is true
       return (outer_equal && ( outer_at_end || inner_equal));
     }
 
@@ -179,7 +189,9 @@ class Graph {
         const decltype(outer_begin_)& begin,
         const decltype(outer_end_)& end)
       : outer_iterator_{curr}, outer_begin_{begin}, outer_end_{end} {
-      FindValidEdgeForward(); // find the first valid edge
+      //after we initialized a iterator, we will find the first valid
+      //edge
+      FindValidEdgeForward();
     };
 
     /*
@@ -217,6 +229,7 @@ class Graph {
         }
         // if there is no valid edge, we will continue to next outer_iterator_
       }
+      //?
       inner_iterator_ = std::cend(outer_iterator_->second);
       return false;
     }
@@ -259,7 +272,7 @@ class Graph {
       return false;
     }
 
-
+    //find a valid edge pair in backward direction( in each edgeSet)
     bool findValidInEdgeSetBackward() {
       // assign to last element of edge set
       inner_iterator_ = std::cend(outer_iterator_->second);
@@ -364,7 +377,6 @@ class Graph {
   }
 
   friend std::ostream& operator<<(std::ostream& os, const gdwg::Graph<N, E>& g) noexcept {
-    //TODO:change format back to the spec one
     for (const auto& node : g.nodes_) {
       // write node value
       os << node.first->value << " (\n";
