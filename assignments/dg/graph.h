@@ -303,8 +303,8 @@ class Graph {
   // TODO(Gary): fix test_file by using explict copy constructor
   // TODO(Gary): and Hayden say they will only explicitly call this two constructor
   // TODO(Gary): before submit, change graph.tpp to graph.cpp to run linter again!!
-  Graph(const gdwg::Graph<N, E>&) noexcept;
-  Graph(gdwg::Graph<N, E>&&) noexcept;
+  explicit Graph(const gdwg::Graph<N, E>&) noexcept;
+  explicit Graph(gdwg::Graph<N, E>&&) noexcept;
   ~Graph() = default;
 
   // copy and move assignment
