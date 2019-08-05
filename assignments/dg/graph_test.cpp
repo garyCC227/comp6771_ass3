@@ -192,6 +192,7 @@ SCENARIO("Testing default constructor") {
       THEN("-> the dimension should be 4")
       REQUIRE(g.GetNodes().size() == 4);
       AND_THEN("We copy to another graph") {
+        // TODO(Gary): like this -> change to gdwg::Graph<int, int>g1{g}
         gdwg::Graph<int, int> g1 = g;
         THEN("-> the dimension should be 4") {
           REQUIRE(g.GetNodes().size() == g1.GetNodes().size());
