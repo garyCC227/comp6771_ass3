@@ -192,8 +192,8 @@ SCENARIO("Testing default constructor") {
       THEN("-> the dimension should be 4")
       REQUIRE(g.GetNodes().size() == 4);
       AND_THEN("We copy to another graph") {
-        // TODO(Gary): like this -> change to gdwg::Graph<int, int>g1{g}
-        gdwg::Graph<int, int> g1 = g;
+        gdwg::Graph<int, int> g1{2};
+        g1 = g;
         THEN("-> the dimension should be 4") {
           REQUIRE(g.GetNodes().size() == g1.GetNodes().size());
           AND_THEN("The printed graph should be") {
@@ -224,7 +224,8 @@ SCENARIO("Testing default constructor") {
       THEN("-> the dimension should be 4")
       REQUIRE(g.GetNodes().size() == 4);
       AND_THEN("We move another graph") {
-        gdwg::Graph<int, int> g1 = std::move(g);
+        gdwg::Graph<int, int> g1{};
+        g1 = std::move(g);
         THEN("-> the new dimension should be 4") {
           REQUIRE(g1.GetNodes().size() == 4);
           AND_THEN("The printed graph should be") {
