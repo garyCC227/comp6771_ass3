@@ -2,24 +2,25 @@
 #define ASSIGNMENTS_DG_GRAPH_H_
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
-#include <iostream>
 
 namespace gdwg {
 
 // start of Custom comparator
-template<typename N>
+template <typename N>
 struct CompareByNode {
   // comparator for Graph -> compare Node value
   bool operator()(const N& lhs, const N& rhs) const { return lhs->value < rhs->value; }
-}; // comparator for std::map
+};  // comparator for std::map
 
-template<typename EP>
+template <typename EP>
 struct CompareByEdgePair {
   bool operator()(const EP& lhs, const EP& rhs) const {
     // comparator for EdgeSet -> compare Node value in each EdgePair
@@ -28,35 +29,34 @@ struct CompareByEdgePair {
     }
     return (std::get<0>(lhs).lock()->value < std::get<0>(rhs).lock()->value);
   }
-};//comparator for std::set (our edgeSet)
+};  // comparator for std::set (our edgeSet)
 // end of custom compartor
 
-template<typename N, typename E>
+template <typename N, typename E>
 class Graph {
  private:
   // Vertex of graph
   struct Node {
     // constructor for Node
-    Node(N value) : value{value} {};
+    explicit Node(N value) : value{value} {};
     N value;
   };
 
  public:
   // type alias
   using EdgePair = std::pair<std::weak_ptr<Node>, E>;
-  using EdgeSet = std::set<EdgePair, CompareByEdgePair<EdgePair>>;//,
+  using EdgeSet = std::set<EdgePair, CompareByEdgePair<EdgePair>>;  //,
   using NodePtr = std::shared_ptr<Node>;
 
-  //iterator class
+  // iterator class
   class const_iterator {
    public:
-    //iterator tag
+    // iterator tag
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = std::tuple<N, N, E>;
     using reference = std::tuple<const N&, const N&, const E&>;
     using pointer = std::tuple<N, N, E>*;
     using difference_type = int;
-
 
     reference operator*() const {
       return {outer_iterator_->first->value, inner_iterator_->first.lock()->value,
@@ -72,14 +72,13 @@ class Graph {
      */
     const_iterator operator++() {
       if (outer_iterator_ != outer_end_) {
-        //if in this level, curr_inner - end_of_curr_edgeSet > 1 -> so we still have
-        //some more elements to check
+        // if in this level, curr_inner - end_of_curr_edgeSet > 1 -> so we still have
+        // some more elements to check
         if (std::distance(inner_iterator_, std::cend(outer_iterator_->second)) > 1) {
-
           std::advance(inner_iterator_, 1);
           for (; inner_iterator_ != std::cend(outer_iterator_->second); ++inner_iterator_) {
             auto edge_ptr = inner_iterator_->first.lock();
-            //avoid nullptr for our weak pointer
+            // avoid nullptr for our weak pointer
             if (edge_ptr) {
               return *this;
             }
@@ -105,8 +104,8 @@ class Graph {
      * ps: iterator in outside is always with valid edge. do not worry [from, invalid, invalid]
      * algorithm:
      *  if(outer_end):
-     *    --outer first(move previous outer_level), then find a valid edge iterator to return,FinvaValidBackward()
-     *  else:
+     *    --outer first(move previous outer_level), then find a valid edge iterator to
+     * return,FinvaValidBackward() else:
      *    //-- to find prev valid edge in the curr edgeSet
      *    if(not at the begin of edgeSet):
      *        --iter;
@@ -128,10 +127,10 @@ class Graph {
      */
     const_iterator operator--() {
       if (outer_iterator_ == outer_end_) {
-        --outer_iterator_; //--outer_iter, then call find FindValidEdgeBackward()
-        FindValidEdgeBackward(); //so we are not at the outer_end
+        --outer_iterator_;        // --outer_iter, then call find FindValidEdgeBackward()
+        FindValidEdgeBackward();  // so we are not at the outer_end
       } else {
-        if (std::distance(std::cbegin(outer_iterator_->second),inner_iterator_) > 0) {
+        if (std::distance(std::cbegin(outer_iterator_->second), inner_iterator_) > 0) {
           std::advance(inner_iterator_, -1);
           for (; inner_iterator_ != std::cbegin(outer_iterator_->second); --inner_iterator_) {
             // stop here if we find a valid edge
@@ -151,7 +150,7 @@ class Graph {
             --outer_iterator_;
             FindValidEdgeBackward();
           }
-          //if we are at outer_begin; we did not call FindValidEdgeBackward()
+          // if we are at outer_begin; we did not call FindValidEdgeBackward()
         }
       }
       return *this;
@@ -166,10 +165,10 @@ class Graph {
       bool outer_equal = (lhs.outer_iterator_ == rhs.outer_iterator_);
       bool inner_equal = (lhs.inner_iterator_ == rhs.inner_iterator_);
       bool outer_at_end = (lhs.outer_iterator_ == lhs.outer_end_);
-      //compare outer_iter, compare inner_iter
-      //but if outer_iter is at end -> then we dont really care inner -> so which mean inner_equal
-      //is true
-      return (outer_equal && ( outer_at_end || inner_equal));
+      // compare outer_iter, compare inner_iter
+      // but if outer_iter is at end -> then we dont really care inner -> so which mean inner_equal
+      // is true
+      return (outer_equal && (outer_at_end || inner_equal));
     }
 
     friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) {
@@ -184,13 +183,12 @@ class Graph {
 
     friend class Graph;
 
-    const_iterator(
-        const decltype(outer_iterator_)& curr,
-        const decltype(outer_begin_)& begin,
-        const decltype(outer_end_)& end)
+    const_iterator(const decltype(outer_iterator_)& curr,
+                   const decltype(outer_begin_)& begin,
+                   const decltype(outer_end_)& end)
       : outer_iterator_{curr}, outer_begin_{begin}, outer_end_{end} {
-      //after we initialized a iterator, we will find the first valid
-      //edge
+      // after we initialized a iterator, we will find the first valid
+      // edge
       FindValidEdgeForward();
     };
 
@@ -234,7 +232,6 @@ class Graph {
       return false;
     }
 
-
     /*
      * so we only have -- operator to call this function,
      * and Assumption: whenever we call this function -> outer_iterator !=  outer_end
@@ -260,9 +257,9 @@ class Graph {
           }
         }
       }
-      //we might call this function, when we reach outer_begin, after we --
-      if(outer_iterator_ == outer_begin_){
-        if(!outer_iterator_->second.empty()){
+      // we might call this function, when we reach outer_begin, after we --
+      if (outer_iterator_ == outer_begin_) {
+        if (!outer_iterator_->second.empty()) {
           if (findValidInEdgeSetBackward()) {
             return true;
           }
@@ -272,7 +269,7 @@ class Graph {
       return false;
     }
 
-    //find a valid edge pair in backward direction( in each edgeSet)
+    // find a valid edge pair in backward direction( in each edgeSet)
     bool findValidInEdgeSetBackward() {
       // assign to last element of edge set
       inner_iterator_ = std::cend(outer_iterator_->second);
@@ -292,7 +289,6 @@ class Graph {
 
       return false;
     }
-
   };  // end of iterator class
 
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
@@ -303,6 +299,8 @@ class Graph {
   Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator,
         typename std::vector<std::tuple<N, N, E>>::const_iterator) noexcept;
   Graph(std::initializer_list<N>) noexcept;
+  // TODO(Gary): add explicit keyword here. linter tell us to
+  // TODO(Gary): and Hayden say they will only explicitly call this two constructor
   Graph(const gdwg::Graph<N, E>&) noexcept;
   Graph(gdwg::Graph<N, E>&&) noexcept;
   ~Graph() = default;
@@ -312,13 +310,13 @@ class Graph {
   Graph& operator=(gdwg::Graph<N, E>&&) noexcept;
 
   // methods
-  bool InsertNode(const N& val) noexcept ;
+  bool InsertNode(const N& val) noexcept;
   bool InsertEdge(const N& src, const N& dst, const E& w);
-  bool IsNode(const N& val) const noexcept ;
+  bool IsNode(const N& val) const noexcept;
   bool IsConnected(const N& src, const N& dst) const;
   std::vector<N> GetNodes() const noexcept;
   bool DeleteNode(const N&) noexcept;
-  void Clear() noexcept ;
+  void Clear() noexcept;
   std::vector<N> GetConnected(const N& src) const;
   std::vector<E> GetWeights(const N& src, const N& dst) const;
   bool erase(const N& src, const N& dst, const E& w) noexcept;
@@ -327,16 +325,15 @@ class Graph {
   const_iterator erase(const_iterator it) noexcept;
   const_iterator find(const N&, const N&, const E&) const noexcept;
 
-
   // iterator
   const_iterator cbegin() const;
   const_iterator cend() const;
-  const_iterator begin() const{ return cbegin(); };
-  const_iterator end() const{ return cend(); };
-  const_reverse_iterator crbegin() const{ return const_reverse_iterator{cend()}; }
-  const_reverse_iterator crend()  const{ return const_reverse_iterator{cbegin()}; }
-  const_reverse_iterator rbegin() const{ return crbegin(); }
-  const_reverse_iterator rend()  const{ return crend(); }
+  const_iterator begin() const { return cbegin(); }
+  const_iterator end() const { return cend(); }
+  const_reverse_iterator crbegin() const { return const_reverse_iterator{cend()}; }
+  const_reverse_iterator crend() const { return const_reverse_iterator{cbegin()}; }
+  const_reverse_iterator rbegin() const { return crbegin(); }
+  const_reverse_iterator rend() const { return crend(); }
 
   /*
    * friends implementation
@@ -345,27 +342,32 @@ class Graph {
     auto node_lhs = lhs.GetNodes();
     auto node_rhs = rhs.GetNodes();
     // compare the nodes, need to be same
-    if (node_lhs.size() != node_rhs.size() || node_lhs != node_rhs) return false;
+    if (node_lhs.size() != node_rhs.size() || node_lhs != node_rhs)
+      return false;
 
     auto it_rhs = rhs.nodes_.begin();
     auto it_lhs = lhs.nodes_.begin();
-    for (;it_lhs != lhs.nodes_.end(), it_rhs != rhs.nodes_.end(); ++it_lhs, ++it_rhs) {
+    for (; it_lhs != lhs.nodes_.end(), it_rhs != rhs.nodes_.end(); ++it_lhs, ++it_rhs) {
       // compare the key value
-      if (it_lhs->first->value != it_rhs->first->value ) return false;
+      if (it_lhs->first->value != it_rhs->first->value)
+        return false;
       // check if they have same number of edges
-      if (it_lhs->second.size() != it_rhs->second.size()) return false;
+      if (it_lhs->second.size() != it_rhs->second.size())
+        return false;
 
       // then iterate the edgeSet to compre edges
       auto edge_iterL = it_lhs->second.begin();
       auto edge_iterR = it_rhs->second.begin();
-      for (;edge_iterL != it_lhs->second.end(), edge_iterR != it_rhs->second.end(); ++edge_iterL, ++edge_iterR) {
+      for (; edge_iterL != it_lhs->second.end(), edge_iterR != it_rhs->second.end();
+           ++edge_iterL, ++edge_iterR) {
         // if one of them are false
         if (!(edge_iterL->first.lock() && edge_iterR->first.lock()))
           return false;
         // compare both dest amd weogjt
         bool dest_equal = (edge_iterL->first.lock()->value == edge_iterR->first.lock()->value);
         bool weight_equal = (edge_iterL->second == edge_iterR->second);
-        if (!dest_equal || !weight_equal) return false;
+        if (!dest_equal || !weight_equal)
+          return false;
       }
     }
 
@@ -394,12 +396,10 @@ class Graph {
   }
 
  private:
-  std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>> nodes_; //
+  std::map<NodePtr, EdgeSet, CompareByNode<NodePtr>> nodes_;  //
 };
 
 }  // namespace gdwg
-
-
 
 #include "assignments/dg/graph.tpp"
 
