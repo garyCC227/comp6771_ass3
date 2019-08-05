@@ -1,4 +1,3 @@
-#include "assignments/dg/graph.h"
 template <typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
