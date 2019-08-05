@@ -300,6 +300,7 @@ class Graph {
         typename std::vector<std::tuple<N, N, E>>::const_iterator) noexcept;
   Graph(std::initializer_list<N>) noexcept;
   // TODO(Gary): add explicit keyword here. linter tell us to
+  // TODO(Gary): fix test_file by using explict copy constructor
   // TODO(Gary): and Hayden say they will only explicitly call this two constructor
   Graph(const gdwg::Graph<N, E>&) noexcept;
   Graph(gdwg::Graph<N, E>&&) noexcept;
