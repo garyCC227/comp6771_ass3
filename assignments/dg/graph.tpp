@@ -1,3 +1,9 @@
+#include <utility>
+#include <memory>
+#include <tuple>
+#include <vector>
+#include <set>
+
 template <typename N, typename E>
 gdwg::Graph<N, E>::Graph() noexcept : nodes_{} {}
 
