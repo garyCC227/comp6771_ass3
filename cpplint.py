@@ -3289,9 +3289,11 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
 
   # You shouldn't have spaces before your brackets, except maybe after
   # 'delete []' or 'return []() {};'
-  if Search(r'\w\s+\[', line) and not Search(r'(?:delete|return)\s+\[', line):
-    error(filename, linenum, 'whitespace/braces', 5,
-          'Extra space before [')
+  # Disable this as it turns out that this conflicts with clang-format for
+  # structured bindings.
+  # if Search(r'\w\s+\[', line) and not Search(r'(?:delete|return)\s+\[', line):
+  #   error(filename, linenum, 'whitespace/braces', 5,
+  #         'Extra space before [')
 
   # In range-based for, we wanted spaces before and after the colon, but
   # not around "::" tokens that might appear.
@@ -3838,8 +3840,9 @@ def CheckBraces(filename, clean_lines, linenum, error):
           # a lambda expression.
           if not Match(r'^[^{};]*\[[^\[\]]*\][^{}]*\{[^{}]*\}\s*\)*[;,]\s*$',
                        endline):
-            error(filename, linenum, 'readability/braces', 4,
-                  'If/else bodies with multiple statements require braces')
+            pass
+            # error(filename, linenum, 'readability/braces', 4,
+            #      'If/else bodies with multiple statements require braces')
         elif endlinenum < len(clean_lines.elided) - 1:
           # Make sure the next line is dedented
           next_line = clean_lines.elided[endlinenum + 1]
@@ -3852,10 +3855,6 @@ def CheckBraces(filename, clean_lines, linenum, error):
             error(filename, linenum, 'readability/braces', 4,
                   'Else clause should be indented at the same level as if. '
                   'Ambiguous nested if/else chains require braces.')
-          elif next_indent > if_indent:
-            error(filename, linenum, 'readability/braces', 4,
-                  'If/else bodies with multiple statements require braces')
-
 
 def CheckTrailingSemicolon(filename, clean_lines, linenum, error):
   """Looks for redundant trailing semicolon.
