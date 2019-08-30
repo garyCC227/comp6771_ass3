@@ -1,6 +1,7 @@
 #include <iostream>
-#include <utility>
 #include <vector>
+#include <utility>
+#include <list>
 
 #include "assignments/ev/euclidean_vector.h"
 
@@ -33,7 +34,7 @@ int main() {
   // test the move constructor
   EuclideanVector g = std::move(f);
   std::cout << g << '\n';
-  std::cout << f << '\n';
+  std::cout << f <<'\n';
 
   // try operator overloading
   e += d;
